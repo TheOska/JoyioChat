@@ -1,0 +1,37 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/menu_group_1">
+        <item
+            android:id="@+id/menu_spot"
+            android:icon="@drawable/ic_global_menu_nearby"
+            android:title="Spot produces" />
+        <item
+            android:id="@+id/menu_seek"
+            android:icon="@drawable/ic_global_menu_nearby"
+            android:title="Find produces" />
+        <item
+            android:id="@+id/menu_request"
+            android:icon="@drawable/ic_global_menu_nearby"
+            android:title="My request" />
+        <item
+            android:id="@+id/menu_promotion"
+            android:icon="@drawable/ic_global_menu_nearby"
+            android:title="live promotion" />
+        <item
+            android:id="@+id/menu_vendor"
+            android:icon="@drawable/ic_global_menu_nearby"
+            android:title="Vendor" />
+        <item
+            android:id="@+id/menu_nearby"
+            android:icon="@drawable/ic_global_menu_nearby"
+            android:title="nearby you
+            " />
+    </group>
+    <group android:id="@+id/menu_group_2">
+        <item
+            android:id="@+id/menu_settings"
+            android:title="Settings" />
+        <item
+            android:id="@+id/menu_about"
+            android:title="About" />
+    </group>
+</menu>
