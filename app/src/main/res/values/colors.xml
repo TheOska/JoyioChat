@@ -6,6 +6,8 @@
     <color name="style_color_accent">#0abdca</color>
     <color name="indicator">#0abdca</color>
 
+    <color name="background_dark">#252831</color>
+    <color name="chat_divider">#2f3340</color>
     <color name="fab_color_pressed">#007787</color>
     <color name="fab_color_shadow">#44000000</color>
 
@@ -21,4 +23,5 @@
     <color name="text_like_counter">#2b5a83</color>
 
     <color name="bg_comments">#ffffff</color>
+    <color name="white">#FFFFFF</color>
 </resources>

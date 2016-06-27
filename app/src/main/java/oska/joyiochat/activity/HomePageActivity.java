@@ -18,7 +18,7 @@ import oska.joyiochat.R;
 import oska.joyiochat.adapter.ViewPagerAdapter;
 import oska.joyiochat.utils.Utils;
 
-public class HomePageActivity  extends BaseDrawerActivity{
+public class HomePageActivity  extends BaseActivity{
 
 
     //Declaring All The Variables Needed

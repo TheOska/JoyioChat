@@ -16,6 +16,15 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
+    }
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'armeabi-v7a'
+            universalApk true
+        }
     }
 }
 
@@ -38,4 +47,7 @@ dependencies {
     compile 'com.jakewharton.timber:timber:4.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.affectiva.android:affdexsdk:3.0.1'
+
+    //circler iamge view
+    compile 'de.hdodenhof:circleimageview:2.0.0'
 }
