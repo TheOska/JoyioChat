@@ -46,8 +46,10 @@ dependencies {
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.jakewharton.timber:timber:4.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.affectiva.android:affdexsdk:3.0.1'
 
     //circler iamge view
     compile 'de.hdodenhof:circleimageview:2.0.0'
+
+    //Rajawali
+    compile 'org.rajawali3d:rajawali:1.1.777@aar'
 }

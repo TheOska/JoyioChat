@@ -1,5 +1,6 @@
 package oska.joyiochat.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -18,6 +19,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import oska.joyiochat.R;
+import oska.joyiochat.activity.TestRajawaliActivity;
 import oska.joyiochat.adapter.ChatContactAdapter;
 import oska.joyiochat.adapter.FavPeopleAdapter;
 import oska.joyiochat.module.ChatContactItem;
@@ -112,10 +114,13 @@ public class ChatRoomFragment extends Fragment implements
     @Override
     public void onImageClick(View v, int position) {
         Snackbar.make(v, "Clicked!" + favPeopleItemArrayList.get(position).getFavName(), Snackbar.LENGTH_SHORT).show();
+        getContext().startActivity(new Intent(getActivity(),TestRajawaliActivity.class));
+
     }
 
     @Override
     public void onChatContactImageClick(View v, int position) {
         Snackbar.make(v, "Clicked!" + chatContactIteamArrayList.get(position).getContactName(), Snackbar.LENGTH_SHORT).show();
+        getContext().startActivity(new Intent(getActivity(),TestRajawaliActivity.class));
     }
 }

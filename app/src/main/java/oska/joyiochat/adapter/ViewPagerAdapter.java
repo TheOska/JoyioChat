@@ -1,5 +1,6 @@
 package oska.joyiochat.adapter;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,8 +19,13 @@ import oska.joyiochat.fragment.TabFragment2;
  */
 public class ViewPagerAdapter extends FragmentStatePagerAdapter {
 
+    private  Context context;
     public ViewPagerAdapter(FragmentManager fm) {
         super(fm);
+    }
+    public ViewPagerAdapter(FragmentManager fm, Context context) {
+        super(fm);
+        this.context = context;
     }
 
     @Override

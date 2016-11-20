@@ -50,7 +50,7 @@ public class BaseActivity extends AppCompatActivity {
         if (toolbar != null) {
             setSupportActionBar(toolbar);
             toolbar.setNavigationIcon(R.drawable.ic_menu_cyan);
-    }
+        }
     }
 
     @Override

@@ -1,29 +1,21 @@
 package oska.joyiochat.adapter;
 
 import android.content.Context;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextSwitcher;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import oska.joyiochat.R;
-import oska.joyiochat.activity.MainActivity;
 import oska.joyiochat.module.FavPeopleItem;
-import oska.joyiochat.view.LoadingFeedItemView;
 
 
 /**
