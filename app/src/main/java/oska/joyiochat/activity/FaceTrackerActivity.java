@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -37,10 +38,15 @@ import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
+import org.rajawali3d.view.ISurface;
+import org.rajawali3d.view.SurfaceView;
+
 import java.io.IOException;
 
 import oska.joyiochat.R;
+import oska.joyiochat.rajawali.CustomRenderer;
 import oska.joyiochat.face.tracker.GraphicFaceTracker;
+import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.views.CameraSourcePreview;
 import oska.joyiochat.views.GraphicOverlay;
 
@@ -55,14 +61,15 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
     private CameraSourcePreview mPreview;
     private GraphicOverlay mGraphicOverlay;
-
     private static final int RC_HANDLE_GMS = 9001;
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
+    private Activity mRefActivity;
+    private Handler mHandler;
 
-    //==============================================================================================
-    // Activity Methods
-    //==============================================================================================
+    private SurfaceView surface;
+    CustomRenderer renderer;
+    ObjRender objRender;
 
     /**
      * Initializes the UI and initiates the creation of a face detector.
@@ -83,8 +90,37 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         } else {
             requestCameraPermission();
         }
-    }
+        mRefActivity = this;
 
+        surface = (SurfaceView) findViewById(R.id.rajawali_surface_view);
+        surface.setFrameRate(60.0);
+        surface.setRenderMode(ISurface.RENDERMODE_WHEN_DIRTY);
+        surface.setTransparent(true);
+//
+        objRender = new ObjRender(this);
+//        renderer = new CustomRenderer(this);
+        surface.setSurfaceRenderer(objRender);
+
+
+
+    }
+    boolean added = false;
+
+    public void render3D(){
+        mRefActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(!added) {
+                    Log.d("oska", "added view");
+                    renderer.dontRen();
+                    renderer.addNewObj();
+                    added = true;
+                }
+            }
+        });
+
+
+    }
     /**
      * Handles the requesting of the camera permission.  This includes
      * showing a "Snackbar" message of why the permission is needed then
@@ -179,9 +215,9 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mCameraSource != null) {
-            mCameraSource.release();
-        }
+//        if (mCameraSource != null) {
+//            mCameraSource.release();
+//        }
     }
 
     /**
@@ -274,7 +310,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     private class GraphicFaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
         public Tracker<Face> create(Face face) {
-            return new GraphicFaceTracker(mGraphicOverlay);
+            return new GraphicFaceTracker(mGraphicOverlay, mRefActivity, getApplicationContext());
         }
     }
 }

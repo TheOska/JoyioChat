@@ -11,7 +11,7 @@ import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.SurfaceView;
 
 import oska.joyiochat.R;
-import oska.joyiochat.Rajawali.CustomRenderer;
+import oska.joyiochat.rajawali.CustomRenderer;
 
 
 /**

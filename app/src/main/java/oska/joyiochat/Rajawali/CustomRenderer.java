@@ -1,4 +1,4 @@
-package oska.joyiochat.Rajawali;
+package oska.joyiochat.rajawali;
 
 import android.content.Context;
 import android.util.Log;
@@ -23,6 +23,7 @@ public class CustomRenderer extends Renderer {
 
 
     private Sphere mEarthSphere;
+    private Sphere newSp;
     private DirectionalLight mDirectionalLight;
     private Context context;
 
@@ -57,6 +58,28 @@ public class CustomRenderer extends Renderer {
         getCurrentCamera().setZ(4.2f);
     }
 
+    public void dontRen(){
+        getCurrentScene().removeChild(mEarthSphere);
+    }
+    public void addNewObj(){
+        Material material = new Material();
+        material.enableLighting(true);
+        material.setDiffuseMethod(new DiffuseMethod.Lambert());
+        material.setColorInfluence(0);
+        Texture newTexture = new Texture("Earth", R.drawable.img_feed_center_1);
+        try{
+            material.addTexture(newTexture);
+
+        } catch (ATexture.TextureException error){
+            Log.d("DEBUG", "TEXTURE ERROR");
+        }
+
+        newSp = new Sphere(1, 24, 24);
+        newSp.setMaterial(material);
+        getCurrentScene().addChild(newSp);
+        getCurrentCamera().setZ(4.2f);
+
+    }
     @Override
     public void onTouchEvent(MotionEvent event){
     }
