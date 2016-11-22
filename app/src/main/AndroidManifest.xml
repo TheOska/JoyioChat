@@ -24,5 +24,8 @@
         </activity>
         <activity android:name=".activity.TestRajawaliActivity"
             android:label="test"/>
+
+        <activity android:name=".activity.FaceTrackerActivity"
+            android:label="face_tracker"/>
     </application>
 </manifest>

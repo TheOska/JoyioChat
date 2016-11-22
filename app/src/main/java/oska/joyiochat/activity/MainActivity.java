@@ -19,10 +19,8 @@ import oska.joyiochat.utils.Utils;
 
 
 public class MainActivity extends BaseDrawerActivity{
-    public static final String ACTION_SHOW_LOADING_ITEM = "action_show_loading_item";
 
     private static final int ANIM_DURATION_TOOLBAR = 300;
-    private static final int ANIM_DURATION_FAB = 400;
 
     @Bind(R.id.rvFeed)
     RecyclerView rvFeed;
@@ -39,23 +37,8 @@ public class MainActivity extends BaseDrawerActivity{
         Log.v("flow", "before set ContentView");
         setContentView(R.layout.activity_main);
         Log.v("flow", "after set ContentView");
-
-        setupFeed();
-
-
     }
 
-    private void setupFeed() {
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this) {
-            //Returns the amount of extra space that should be laid out by LayoutManager.
-            @Override
-            protected int getExtraLayoutSpace(RecyclerView.State state) {
-                return 300;
-            }
-        };
-        rvFeed.setLayoutManager(linearLayoutManager);
-
-    }
 
 
 
@@ -89,10 +72,4 @@ public class MainActivity extends BaseDrawerActivity{
 
     }
 
-
-
-
-    public void showLikedSnackbar() {
-        Snackbar.make(clContent, "Liked!", Snackbar.LENGTH_SHORT).show();
-    }
 }

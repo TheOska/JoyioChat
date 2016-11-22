@@ -6,13 +6,14 @@ import android.graphics.Paint;
 
 import com.google.android.gms.vision.face.Face;
 
+import oska.joyiochat.views.Graphic;
 import oska.joyiochat.views.GraphicOverlay;
 
 /**
  * Graphic instance for rendering face position, orientation, and landmarks within an associated
  * graphic overlay view.
  */
-class FaceGraphic extends GraphicOverlay.Graphic {
+class FaceGraphic extends Graphic {
     private static final float FACE_POSITION_RADIUS = 10.0f;
     private static final float ID_TEXT_SIZE = 40.0f;
     private static final float ID_Y_OFFSET = 50.0f;

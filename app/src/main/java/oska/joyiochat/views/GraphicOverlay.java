@@ -53,73 +53,6 @@ public class GraphicOverlay extends View {
     private int mFacing = CameraSource.CAMERA_FACING_FRONT;
     private Set<Graphic> mGraphics = new HashSet<>();
     private static String TAG = "GraphicOverlayOska";
-    /**
-     * Base class for a custom graphics object to be rendered within the graphic overlay.  Subclass
-     * this and implement the {@link Graphic#draw(Canvas)} method to define the
-     * graphics element.  Add instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
-     */
-    public static abstract class Graphic {
-        private GraphicOverlay mOverlay;
-
-        public Graphic(GraphicOverlay overlay) {
-            mOverlay = overlay;
-        }
-
-        /**
-         * Draw the graphic on the supplied canvas.  Drawing should use the following methods to
-         * convert to view coordinates for the graphics that are drawn:
-         * <ol>
-         * <li>{@link Graphic#scaleX(float)} and {@link Graphic#scaleY(float)} adjust the size of
-         * the supplied value from the preview scale to the view scale.</li>
-         * <li>{@link Graphic#translateX(float)} and {@link Graphic#translateY(float)} adjust the
-         * coordinate from the preview's coordinate system to the view coordinate system.</li>
-         * </ol>
-         *
-         * @param canvas drawing canvas
-         */
-        public abstract void draw(Canvas canvas);
-
-        /**
-         * Adjusts a horizontal value of the supplied value from the preview scale to the view
-         * scale.
-         */
-        public float scaleX(float horizontal) {
-            return horizontal * mOverlay.mWidthScaleFactor;
-        }
-
-        /**
-         * Adjusts a vertical value of the supplied value from the preview scale to the view scale.
-         */
-        public float scaleY(float vertical) {
-            return vertical * mOverlay.mHeightScaleFactor;
-        }
-
-        /**
-         * Adjusts the x coordinate from the preview's coordinate system to the view coordinate
-         * system.
-         */
-        public float translateX(float x) {
-            if (mOverlay.mFacing == CameraSource.CAMERA_FACING_FRONT) {
-                Log.d(TAG, "inside if case");
-                return mOverlay.getWidth() - scaleX(x);
-            } else {
-                Log.d(TAG, "inside else case");
-                return scaleX(x);
-            }
-        }
-
-        /**
-         * Adjusts the y coordinate from the preview's coordinate system to the view coordinate
-         * system.
-         */
-        public float translateY(float y) {
-            return scaleY(y);
-        }
-
-        public void postInvalidate() {
-            mOverlay.postInvalidate();
-        }
-    }
 
     public GraphicOverlay(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -186,5 +119,17 @@ public class GraphicOverlay extends View {
                 graphic.draw(canvas);
             }
         }
+    }
+
+    public float getmWidthScaleFactor() {
+        return mWidthScaleFactor;
+    }
+
+    public int getmFacing() {
+        return mFacing;
+    }
+
+    public float getmHeightScaleFactor() {
+        return mHeightScaleFactor;
     }
 }

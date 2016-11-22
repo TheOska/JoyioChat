@@ -52,4 +52,7 @@ dependencies {
 
     //Rajawali
     compile 'org.rajawali3d:rajawali:1.1.777@aar'
+    //mobile vision
+    compile 'com.google.android.gms:play-services:7.8.+'
+
 }
