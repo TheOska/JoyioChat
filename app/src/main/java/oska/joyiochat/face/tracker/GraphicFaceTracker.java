@@ -14,6 +14,7 @@ import org.rajawali3d.view.SurfaceView;
 import oska.joyiochat.R;
 import oska.joyiochat.rajawali.CustomRenderer;
 import oska.joyiochat.activity.FaceTrackerActivity;
+import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.views.GraphicOverlay;
 
 
@@ -28,40 +29,31 @@ import oska.joyiochat.views.GraphicOverlay;
  * Create a callback to the GraphicOverlay to compu
  */
 public class GraphicFaceTracker extends Tracker<Face> {
+    private static final String TAG = "GraphicFaceTracker";
     private GraphicOverlay mOverlay;
     private FaceGraphic mFaceGraphic;
     private FaceTrackerActivity activity;
     private SurfaceView surface;
     private CustomRenderer renderer;
     private Context context;
-    private boolean added;
+    private ObjRender objRender;
+    private static final int EMOTION_INDEX_SAD = 0;
+    private static final int EMOTION_INDEX_SMILE = 1;
+    private int lastEmotionIndex;
 
-    public GraphicFaceTracker(GraphicOverlay overlay) {
-        mOverlay = overlay;
-        mFaceGraphic = new FaceGraphic(overlay, activity);
-    }
-
-    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity,  Context context) {
+    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity,  Context context, ObjRender objRender) {
         mOverlay = overlay;
         mFaceGraphic = new FaceGraphic(overlay, activity);
         this.activity = (FaceTrackerActivity)activity;
         this.context = context;
-        added = false;
-//        initSurfaceView();
+        this.objRender = objRender;
+        lastEmotionIndex = -1;
     }
 
-    private void initSurfaceView() {
-        surface = (SurfaceView) activity.findViewById(R.id.rajawali_surface_view);
-        surface.setFrameRate(60.0);
-        surface.setRenderMode(ISurface.RENDERMODE_WHEN_DIRTY);
-        surface.setTransparent(true);
-//
-        renderer = new CustomRenderer(activity);
-        surface.setSurfaceRenderer(renderer);
-    }
 
     /**
      * Start tracking the detected face instance within the face overlay.
+     *
      */
     @Override
     public void onNewItem(int faceId, Face item) {
@@ -77,9 +69,36 @@ public class GraphicFaceTracker extends Tracker<Face> {
         mOverlay.add(mFaceGraphic);
         mFaceGraphic.updateFace(face);
 
-        if(mFaceGraphic.getSmileRate() > 0.55){
-          activity.render3D();
+        if(mFaceGraphic.getSmileRate() > 0.55 && lastEmotionIndex != EMOTION_INDEX_SMILE){
+            Log.d(TAG, "inside smile");
+            renderGlass();
+            lastEmotionIndex = EMOTION_INDEX_SMILE;
         }
+        if(mFaceGraphic.getSmileRate() < 0.2 && lastEmotionIndex == EMOTION_INDEX_SMILE){
+            Log.d(TAG, "inside sad");
+            remove3D();
+            lastEmotionIndex = EMOTION_INDEX_SAD;
+        }
+
+    }
+
+
+
+    public void renderGlass(){
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                objRender.startRendObj();
+            }
+        });
+    }
+    public void remove3D(){
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                objRender.stopRendObj();
+            }
+        });
     }
 
     /**

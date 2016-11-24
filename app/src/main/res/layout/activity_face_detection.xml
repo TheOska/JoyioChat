@@ -9,27 +9,24 @@
 
     <oska.joyiochat.views.CameraSourcePreview
         android:id="@+id/preview"
-        android:layout_weight="0.5"
         android:layout_width="match_parent"
-        android:layout_height="0dp">
-
+        android:layout_height="match_parent">
         <oska.joyiochat.views.GraphicOverlay
             android:id="@+id/faceOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             />
 
-
+        <org.rajawali3d.view.SurfaceView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:frameRate="60"
+            app:renderMode="RENDER_WHEN_DIRTY"
+            android:id="@+id/rajawali_surface_view" />
     </oska.joyiochat.views.CameraSourcePreview>
 
 
-    <org.rajawali3d.view.SurfaceView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.5"
-        app:frameRate="60"
-        app:renderMode="RENDER_WHEN_DIRTY"
-        android:id="@+id/rajawali_surface_view" />
+
 
 
 </LinearLayout>

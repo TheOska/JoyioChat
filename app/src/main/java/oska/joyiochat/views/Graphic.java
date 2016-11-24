@@ -58,10 +58,8 @@ public abstract class Graphic {
      */
     public float translateX(float x) {
         if (mOverlay.getmFacing() == CameraSource.CAMERA_FACING_FRONT) {
-            Log.d(TAG, "inside if case");
             return mOverlay.getWidth() - scaleX(x);
         } else {
-            Log.d(TAG, "inside else case");
             return scaleX(x);
         }
     }
