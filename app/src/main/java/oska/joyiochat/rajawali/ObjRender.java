@@ -89,7 +89,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         try {
             objParser.parse();
             mObjectGroup = objParser.getParsedObject();
-            mObjectGroup.setScale(0.3f);
+            mObjectGroup.setScale(0.35f);
 
 //            mCameraAnim = new RotateOnAxisAnimation(Vector3.Axis.Y, 180);
 //            mCameraAnim.setDurationMilliseconds(8000);
@@ -120,21 +120,20 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
 
 //        mCameraAnim.play();
         mLightAnim.play();
+        Log.d(TAG, "init mObjectGroup RotX: " +mObjectGroup.getRotX());
+        Log.d(TAG, "init mObjectGroup RotY: " +mObjectGroup.getRotY());
+        Log.d(TAG, "init mObjectGroup RotZ: " +mObjectGroup.getRotZ());
+
     }
 
     public void stopRendObj(){
         getCurrentScene().removeChild(mObjectGroup);
     }
 
-    public void  startRendObj(float posX, float posY){
-        Log.d(TAG, "camera pos :" +getCurrentCamera().getPosition());
-        Log.d(TAG, "object pos :" +mObjectGroup.getPosition());
+    public void  startRendObj(){
 //        getCurrentCamera().setLookAt(0,0,0);
         getCurrentScene().addChild(mObjectGroup);
 //        getObjectAt(posX,posY);
-
-        Log.d(TAG, "Post  rend camera pos :" +getCurrentCamera().getPosition());
-        Log.d(TAG, "Post object pos :" +mObjectGroup.getPosition());
     }
 
     @Override
@@ -199,6 +198,10 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     }
 
 
+    /**
+     * After gluUnProject the 3D Object:
+     * Camera will not after, include camera rotation, distance between scene and camera
+     */
     public void moveSelectedObject(float x, float y) {
         if (mObjectGroup == null)
             return;
@@ -241,7 +244,12 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mNewObjPos.add(mNearPos);
         mObjectGroup.setX(mNewObjPos.x);
         mObjectGroup.setY(mNewObjPos.y);
-        mObjectGroup.setRotY(180);
+        mObjectGroup.setRotY(100);
+
+        Log.d(TAG, "mObjectGroup RotX: " +mObjectGroup.getRotX());
+        Log.d(TAG, "mObjectGroup RotY: " +mObjectGroup.getRotY());
+        Log.d(TAG, "mObjectGroup RotZ: " +mObjectGroup.getRotZ());
+
     }
 
     public void stopMovingSelectedObject() {
