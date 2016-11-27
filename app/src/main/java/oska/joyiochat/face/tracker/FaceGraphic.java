@@ -27,6 +27,7 @@ class FaceGraphic extends Graphic {
     private static final float BOX_STROKE_WIDTH = 5.0f;
     private final double scaleX = 2.88005601079881;
     private final double scaleY = 3.196312015938482;
+    private float boxXOffset, boxYOffset, boxLeft, boxTop, boxRight, boxBottom, x, y;
 
     //    private RajawaliListener rajawaliListener;
     private static final int COLOR_CHOICES[] = {
@@ -123,8 +124,8 @@ class FaceGraphic extends Graphic {
         // @face.getPosition(); Returns the top left position of the face within the image.
         // @face.getWidth(); Returns the width of the face region in pixels.
         // Draws a circle at the position of the detected face, with the face's track id below.
-        float x = translateX(face.getPosition().x + face.getWidth() / 2);
-        float y = translateY(face.getPosition().y + face.getHeight() / 2);
+        x = translateX(face.getPosition().x + face.getWidth() / 2);
+        y = translateY(face.getPosition().y + face.getHeight() / 2);
         smilingRate = face.getIsSmilingProbability();
 
         if(face.getIsSmilingProbability() > 0.55){
@@ -151,13 +152,13 @@ class FaceGraphic extends Graphic {
 //        }
 
         // Draws a bounding box around the face.
-        float xOffset = scaleX(face.getWidth() / 2.0f);
-        float yOffset = scaleY(face.getHeight() / 2.0f);
-        float left = x - xOffset;
-        float top = y - yOffset;
-        float right = x + xOffset;
-        float bottom = y + yOffset;
-        canvas.drawRect(left, top, right, bottom, mBoxPaint);
+         boxXOffset = scaleX(face.getWidth() / 2.0f);
+         boxYOffset = scaleY(face.getHeight() / 2.0f);
+         boxLeft = x - boxXOffset;
+         boxTop = y - boxYOffset;
+         boxRight = x + boxXOffset;
+         boxBottom = y + boxYOffset;
+        canvas.drawRect(boxLeft, boxTop, boxRight, boxBottom, mBoxPaint);
 //        canvas.drawPoint();
         drawLandmark(face ,canvas);
 
@@ -189,5 +190,27 @@ class FaceGraphic extends Graphic {
         return smilingRate;
     }
 
+    public float getBoxLeft() {
+        return boxLeft;
+    }
 
+    public float getBoxTop() {
+        return boxTop;
+    }
+
+    public float getBoxRight() {
+        return boxRight;
+    }
+
+    public float getBoxBottom() {
+        return boxBottom;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
 }

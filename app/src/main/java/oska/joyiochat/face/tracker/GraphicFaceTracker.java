@@ -17,6 +17,7 @@ import oska.joyiochat.R;
 import oska.joyiochat.rajawali.CustomRenderer;
 import oska.joyiochat.activity.FaceTrackerActivity;
 import oska.joyiochat.rajawali.ObjRender;
+import oska.joyiochat.utils.FaceUtils;
 import oska.joyiochat.views.GraphicOverlay;
 
 
@@ -38,8 +39,7 @@ public class GraphicFaceTracker extends Tracker<Face> {
     private SurfaceView surface;
     private Context context;
     private ObjRender objRender;
-    private static final int EMOTION_INDEX_SAD = 0;
-    private static final int EMOTION_INDEX_SMILE = 1;
+
     private int lastEmotionIndex;
     private final float scaleX = 2.88005601079881f;
     private final float scaleY = 3.196312015938482f;
@@ -75,7 +75,7 @@ public class GraphicFaceTracker extends Tracker<Face> {
     public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
         mOverlay.add(mFaceGraphic);
         mFaceGraphic.updateFace(face);
-        if(callOnce == 0){
+        if(callOnce != 0){
             for (Landmark landmark : face.getLandmarks()) {
                 switch (landmark.getType()) {
                     case Landmark.LEFT_EYE:
@@ -85,20 +85,25 @@ public class GraphicFaceTracker extends Tracker<Face> {
                 }
             }
         }
-        if(mFaceGraphic.getSmileRate() > 0.55 && lastEmotionIndex != EMOTION_INDEX_SMILE){
+        if(mFaceGraphic.getSmileRate() > FaceUtils.THRESHOLD_SMILE ){
             Log.d(TAG, "inside smile");
-            renderGlass(leftEyePosX * scaleX * 6, leftEyePosY * scaleY* 6);
-            lastEmotionIndex = EMOTION_INDEX_SMILE;
+            if(lastEmotionIndex != FaceUtils.EMOTION_INDEX_SMILE) {
+                renderGlass(leftEyePosX * scaleX , leftEyePosY * scaleY );
+                lastEmotionIndex = FaceUtils.EMOTION_INDEX_SMILE;
+            }
+            Log.d(TAG, "box left position " + mFaceGraphic.getBoxLeft());
+            Log.d(TAG, "box top position " + mFaceGraphic.getBoxTop());
+            objRender.moveSelectedObject(leftEyePosX+ mFaceGraphic.getX() , leftEyePosY+mFaceGraphic.getY());
 //            objRender.getObjectAt(leftEyePosX, leftEyePosY);
 //            else
 //                objRender.moveSelectedObject(callOnce,100f);
         }
         callOnce+= 50;
 
-        if(mFaceGraphic.getSmileRate() < 0.2 && lastEmotionIndex == EMOTION_INDEX_SMILE){
+        if(mFaceGraphic.getSmileRate() < FaceUtils.THRESHOLD_SAD && lastEmotionIndex == FaceUtils.EMOTION_INDEX_SMILE){
             Log.d(TAG, "inside sad");
             remove3D();
-            lastEmotionIndex = EMOTION_INDEX_SAD;
+            lastEmotionIndex = FaceUtils.EMOTION_INDEX_SAD;
         }
 
     }
