@@ -2,11 +2,13 @@ package oska.joyiochat.face.tracker;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.PointF;
 import android.util.Log;
 
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
+import com.google.android.gms.vision.face.Landmark;
 
 import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.SurfaceView;
@@ -34,12 +36,13 @@ public class GraphicFaceTracker extends Tracker<Face> {
     private FaceGraphic mFaceGraphic;
     private FaceTrackerActivity activity;
     private SurfaceView surface;
-    private CustomRenderer renderer;
     private Context context;
     private ObjRender objRender;
     private static final int EMOTION_INDEX_SAD = 0;
     private static final int EMOTION_INDEX_SMILE = 1;
     private int lastEmotionIndex;
+    private final float scaleX = 2.88005601079881f;
+    private final float scaleY = 3.196312015938482f;
 
     public GraphicFaceTracker(GraphicOverlay overlay, Activity activity,  Context context, ObjRender objRender) {
         mOverlay = overlay;
@@ -63,17 +66,35 @@ public class GraphicFaceTracker extends Tracker<Face> {
     /**
      * Update the position/characteristics of the face within the overlay.
      */
+    int callOnce = 0;
+    float leftEyePosX;
+    float leftEyePosY;
 
+    float rightEyePos;
     @Override
     public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
         mOverlay.add(mFaceGraphic);
         mFaceGraphic.updateFace(face);
-
+        if(callOnce == 0){
+            for (Landmark landmark : face.getLandmarks()) {
+                switch (landmark.getType()) {
+                    case Landmark.LEFT_EYE:
+                        leftEyePosX = face.getPosition().x;
+                        leftEyePosY = face.getPosition().y;
+                        break;
+                }
+            }
+        }
         if(mFaceGraphic.getSmileRate() > 0.55 && lastEmotionIndex != EMOTION_INDEX_SMILE){
             Log.d(TAG, "inside smile");
-            renderGlass();
+            renderGlass(leftEyePosX * scaleX * 6, leftEyePosY * scaleY* 6);
             lastEmotionIndex = EMOTION_INDEX_SMILE;
+//            objRender.getObjectAt(leftEyePosX, leftEyePosY);
+//            else
+//                objRender.moveSelectedObject(callOnce,100f);
         }
+        callOnce+= 50;
+
         if(mFaceGraphic.getSmileRate() < 0.2 && lastEmotionIndex == EMOTION_INDEX_SMILE){
             Log.d(TAG, "inside sad");
             remove3D();
@@ -84,11 +105,11 @@ public class GraphicFaceTracker extends Tracker<Face> {
 
 
 
-    public void renderGlass(){
+    public void renderGlass(final float leftEyePosX, final float leftEyePosY){
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                objRender.startRendObj();
+                objRender.startRendObj(leftEyePosX, leftEyePosY);
             }
         });
     }

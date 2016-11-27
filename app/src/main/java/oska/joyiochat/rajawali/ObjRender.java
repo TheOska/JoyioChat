@@ -1,6 +1,7 @@
 package oska.joyiochat.rajawali;
 
 import android.content.Context;
+import android.opengl.GLES20;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -51,7 +52,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     private Matrix4 mProjectionMatrix;
     private ObjectColorPicker mPicker;
     private boolean objRendered;
-
+    private final String TAG = "ObjRender";
     public ObjRender(Context context) {
         super(context);
         this.context = context;
@@ -81,6 +82,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         getCurrentScene().addLight(mLight);
         getCurrentCamera().setZ(16);
 
+
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
                 mTextureManager, R.raw.sun_glasses_obj);
 
@@ -88,12 +90,11 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
             objParser.parse();
             mObjectGroup = objParser.getParsedObject();
             mObjectGroup.setScale(0.3f);
-            getCurrentScene().addChild(mObjectGroup);
 
-            mCameraAnim = new RotateOnAxisAnimation(Vector3.Axis.Y, 180);
-            mCameraAnim.setDurationMilliseconds(8000);
-            mCameraAnim.setRepeatMode(Animation.RepeatMode.INFINITE);
-            mCameraAnim.setTransformable3D(mObjectGroup);
+//            mCameraAnim = new RotateOnAxisAnimation(Vector3.Axis.Y, 180);
+//            mCameraAnim.setDurationMilliseconds(8000);
+//            mCameraAnim.setRepeatMode(Animation.RepeatMode.INFINITE);
+//            mCameraAnim.setTransformable3D(mObjectGroup);
 
 
         } catch (ParsingException e) {
@@ -108,11 +109,14 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mLightAnim.setRepeatMode(Animation.RepeatMode.INFINITE);
         mLightAnim.setTransformable3D(mLight);
 
-        getCurrentScene().registerAnimation(mCameraAnim);
+        mObjectGroup.setDrawingMode(GLES20.GL_TRIANGLES);
+        mPicker.registerObject(mObjectGroup);
+//        getCurrentScene().registerAnimation(mCameraAnim);
         getCurrentScene().registerAnimation(mLightAnim);
 
         // after initialized then remove child
-        getCurrentScene().removeChild(mObjectGroup);
+//        getCurrentScene().removeChild(mObjectGroup);
+//        getCurrentScene().addChild(mObjectGroup);
 
 //        mCameraAnim.play();
         mLightAnim.play();
@@ -122,8 +126,15 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         getCurrentScene().removeChild(mObjectGroup);
     }
 
-    public void startRendObj(){
+    public void  startRendObj(float posX, float posY){
+        Log.d(TAG, "camera pos :" +getCurrentCamera().getPosition());
+        Log.d(TAG, "object pos :" +mObjectGroup.getPosition());
+//        getCurrentCamera().setLookAt(0,0,0);
         getCurrentScene().addChild(mObjectGroup);
+//        getObjectAt(posX,posY);
+
+        Log.d(TAG, "Post  rend camera pos :" +getCurrentCamera().getPosition());
+        Log.d(TAG, "Post object pos :" +mObjectGroup.getPosition());
     }
 
     @Override
@@ -154,6 +165,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
 
     public void onRenderSurfaceSizeChanged(GL10 gl, int width, int height) {
         super.onRenderSurfaceSizeChanged(gl, width, height);
+        Log.d(TAG,"onRenderSurfaceSizeChanged called"  );
         mViewport[2] = getViewportWidth();
         mViewport[3] = getViewportHeight();
         mViewMatrix = getCurrentCamera().getViewMatrix();
@@ -161,13 +173,36 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     }
     public void getObjectAt(float x, float y) {
         mPicker.getObjectAt(x, y);
+//        Log.d(TAG , "getObjectAt called");
+//        GLU.gluUnProject(x, getViewportHeight() - y, 0, mViewMatrix.getDoubleValues(), 0,
+//                mProjectionMatrix.getDoubleValues(), 0, mViewport, 0, mNearPos4, 0);
+//
+//        GLU.gluUnProject(x, getViewportHeight() - y, 1.f, mViewMatrix.getDoubleValues(), 0,
+//                mProjectionMatrix.getDoubleValues(), 0, mViewport, 0, mFarPos4, 0);
+//
+//
+//        mNearPos.setAll(mNearPos4[0] / mNearPos4[3], mNearPos4[1]
+//                / mNearPos4[3], mNearPos4[2] / mNearPos4[3]);
+//        mFarPos.setAll(mFarPos4[0] / mFarPos4[3],
+//                mFarPos4[1] / mFarPos4[3], mFarPos4[2] / mFarPos4[3]);
+//        double factor = (Math.abs(mObjectGroup.getZ()) + mNearPos.z)
+//                / (getCurrentCamera().getFarPlane() - getCurrentCamera()
+//                .getNearPlane());
+//
+//        mNewObjPos.setAll(mFarPos);
+//        mNewObjPos.subtract(mNearPos);
+//        mNewObjPos.multiply(factor);
+//        mNewObjPos.add(mNearPos);
+//
+//        mObjectGroup.setX(mNewObjPos.x);
+//        mObjectGroup.setY(mNewObjPos.y);
     }
 
 
     public void moveSelectedObject(float x, float y) {
         if (mObjectGroup == null)
             return;
-
+        Log.d("ObjRender","moveSelectedObject called");
         //
         // -- unproject the screen coordinate (2D) to the camera's near plane
         //
@@ -204,13 +239,13 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mNewObjPos.subtract(mNearPos);
         mNewObjPos.multiply(factor);
         mNewObjPos.add(mNearPos);
-
         mObjectGroup.setX(mNewObjPos.x);
         mObjectGroup.setY(mNewObjPos.y);
+        mObjectGroup.setRotY(180);
     }
 
     public void stopMovingSelectedObject() {
-        mObjectGroup = null;
+//        mObjectGroup = null;
     }
 
     public boolean isObjRendered() {

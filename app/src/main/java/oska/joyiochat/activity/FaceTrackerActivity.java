@@ -54,7 +54,7 @@ import oska.joyiochat.views.GraphicOverlay;
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
  */
-public final class FaceTrackerActivity extends AppCompatActivity implements View.OnTouchListener{
+public final class FaceTrackerActivity extends AppCompatActivity implements View.OnTouchListener {
     private static final String TAG = "FaceTracker";
 
     private CameraSource mCameraSource = null;
@@ -92,7 +92,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
 
         surface = (SurfaceView) findViewById(R.id.rajawali_surface_view);
         surface.setFrameRate(60.0);
-        surface.setRenderMode(ISurface.RENDERMODE_WHEN_DIRTY);
+        surface.setRenderMode(ISurface.RENDERMODE_CONTINUOUSLY);
         surface.setTransparent(true);
 //
         objRender = new ObjRender(this);
@@ -105,14 +105,14 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        Log.d("FaceTrackerActivity", "onTouch");
+//        Log.d("FaceTrackerActivity", "onTouch");
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                Log.d("FaceTrackerActivity", "ACTION_DOWN");
-                objRender.getObjectAt(event.getX(), event.getY());
+//                Log.d("FaceTrackerActivity", "ACTION_DOWN");
+//                objRender.getObjectAt(event.getX(), event.getY());
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.d("FaceTrackerActivity", "ACTION_MOVE");
+//                Log.d("FaceTrackerActivity", "ACTION_MOVE");
                 objRender.moveSelectedObject(event.getX(),
                         event.getY());
                 break;
@@ -163,6 +163,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
 
         Context context = getApplicationContext();
         FaceDetector detector = new FaceDetector.Builder(context)
+//                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+//                .setTrackingEnabled(false)
                .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .build();
 
@@ -184,12 +186,12 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
             // download completes on device.
             Log.w(TAG, "Face detector dependencies are not yet available.");
         }
-
         mCameraSource = new CameraSource.Builder(context, detector)
                 .setRequestedPreviewSize(640, 480)
                 .setFacing(CameraSource.CAMERA_FACING_FRONT)
                 .setRequestedFps(30.0f)
                 .build();
+
     }
 
     /**
@@ -200,7 +202,10 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
         super.onResume();
 
         startCameraSource();
+
     }
+
+
 
     /**
      * Stops the camera.

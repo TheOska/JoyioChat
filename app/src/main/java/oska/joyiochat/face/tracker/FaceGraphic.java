@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import com.google.android.gms.vision.face.Face;
+import com.google.android.gms.vision.face.Landmark;
 
 import org.rajawali3d.view.SurfaceView;
 
@@ -23,7 +25,10 @@ class FaceGraphic extends Graphic {
     private static final float ID_Y_OFFSET = 50.0f;
     private static final float ID_X_OFFSET = -50.0f;
     private static final float BOX_STROKE_WIDTH = 5.0f;
-//    private RajawaliListener rajawaliListener;
+    private final double scaleX = 2.88005601079881;
+    private final double scaleY = 3.196312015938482;
+
+    //    private RajawaliListener rajawaliListener;
     private static final int COLOR_CHOICES[] = {
         Color.BLUE,
         Color.CYAN,
@@ -153,6 +158,31 @@ class FaceGraphic extends Graphic {
         float right = x + xOffset;
         float bottom = y + yOffset;
         canvas.drawRect(left, top, right, bottom, mBoxPaint);
+//        canvas.drawPoint();
+        drawLandmark(face ,canvas);
+
+    }
+
+    private void drawLandmark(Face face, Canvas canvas) {
+//        for (Landmark landmark : face.getLandmarks()) {
+//            int cx = (int) (landmark.getPosition().x * 0.9625);
+//            int cy = (int) (landmark.getPosition().y * 0.9625);
+//            canvas.drawCircle(cx, cy, 10, mFacePositionPaint);
+//        }
+
+            for (Landmark landmark : face.getLandmarks()) {
+                switch (landmark.getType()) {
+                    case Landmark.LEFT_EYE:
+                        Log.d("FaceView", "left eye :" + landmark.getPosition());
+                        break;
+                    case Landmark.RIGHT_EYE:
+                        Log.d("FaceView", "Right eye :" + landmark.getPosition());
+                        break;
+                }
+                int cx = (int) (landmark.getPosition().x * scaleX);
+                int cy = (int) (landmark.getPosition().y * scaleY);
+                canvas.drawCircle(cx, cy, 10, mFacePositionPaint);
+            }
     }
 
     public float getSmileRate() {

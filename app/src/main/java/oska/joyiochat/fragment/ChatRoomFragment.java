@@ -1,6 +1,7 @@
 package oska.joyiochat.fragment;
 
 import android.content.Intent;
+import android.hardware.camera2.params.Face;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -25,6 +26,7 @@ import oska.joyiochat.adapter.ChatContactAdapter;
 import oska.joyiochat.adapter.FavPeopleAdapter;
 import oska.joyiochat.module.ChatContactItem;
 import oska.joyiochat.module.FavPeopleItem;
+import oska.joyiochat.test.PhotoViewerActivity;
 import oska.joyiochat.utils.SpacesItemDecoration;
 
 /**
@@ -122,6 +124,6 @@ public class ChatRoomFragment extends Fragment implements
     @Override
     public void onChatContactImageClick(View v, int position) {
         Snackbar.make(v, "Clicked!" + chatContactIteamArrayList.get(position).getContactName(), Snackbar.LENGTH_SHORT).show();
-        getContext().startActivity(new Intent(getActivity(),TestRajawaliActivity.class));
+        getContext().startActivity(new Intent(getActivity(),PhotoViewerActivity.class));
     }
 }
