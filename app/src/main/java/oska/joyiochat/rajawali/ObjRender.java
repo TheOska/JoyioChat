@@ -30,11 +30,18 @@ import org.rajawali3d.util.OnObjectPickedListener;
 import javax.microedition.khronos.opengles.GL10;
 
 import oska.joyiochat.R;
+import oska.joyiochat.listener.FaceInfoDetectListener;
 
 /**
  * Created by TheOska on 11/22/2016.
  */
 
+/**
+ * This class is aiming to setup and config:
+ * 1. Rajawali sense(include light source and camera)
+ * 2. 3D object rendering (include render which object for .obj source)
+ * 3. 3D object moving(changing the 3D object position)
+ */
 public class ObjRender extends Renderer implements OnObjectPickedListener {
     private PointLight mLight;
     private DirectionalLight mDirectionalLight;
@@ -114,9 +121,6 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
 //        getCurrentScene().registerAnimation(mCameraAnim);
         getCurrentScene().registerAnimation(mLightAnim);
 
-        // after initialized then remove child
-//        getCurrentScene().removeChild(mObjectGroup);
-//        getCurrentScene().addChild(mObjectGroup);
 
 //        mCameraAnim.play();
         mLightAnim.play();
@@ -131,9 +135,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     }
 
     public void  startRendObj(){
-//        getCurrentCamera().setLookAt(0,0,0);
         getCurrentScene().addChild(mObjectGroup);
-//        getObjectAt(posX,posY);
     }
 
     @Override
@@ -172,29 +174,6 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     }
     public void getObjectAt(float x, float y) {
         mPicker.getObjectAt(x, y);
-//        Log.d(TAG , "getObjectAt called");
-//        GLU.gluUnProject(x, getViewportHeight() - y, 0, mViewMatrix.getDoubleValues(), 0,
-//                mProjectionMatrix.getDoubleValues(), 0, mViewport, 0, mNearPos4, 0);
-//
-//        GLU.gluUnProject(x, getViewportHeight() - y, 1.f, mViewMatrix.getDoubleValues(), 0,
-//                mProjectionMatrix.getDoubleValues(), 0, mViewport, 0, mFarPos4, 0);
-//
-//
-//        mNearPos.setAll(mNearPos4[0] / mNearPos4[3], mNearPos4[1]
-//                / mNearPos4[3], mNearPos4[2] / mNearPos4[3]);
-//        mFarPos.setAll(mFarPos4[0] / mFarPos4[3],
-//                mFarPos4[1] / mFarPos4[3], mFarPos4[2] / mFarPos4[3]);
-//        double factor = (Math.abs(mObjectGroup.getZ()) + mNearPos.z)
-//                / (getCurrentCamera().getFarPlane() - getCurrentCamera()
-//                .getNearPlane());
-//
-//        mNewObjPos.setAll(mFarPos);
-//        mNewObjPos.subtract(mNearPos);
-//        mNewObjPos.multiply(factor);
-//        mNewObjPos.add(mNearPos);
-//
-//        mObjectGroup.setX(mNewObjPos.x);
-//        mObjectGroup.setY(mNewObjPos.y);
     }
 
 
@@ -244,7 +223,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mNewObjPos.add(mNearPos);
         mObjectGroup.setX(mNewObjPos.x);
         mObjectGroup.setY(mNewObjPos.y);
-        mObjectGroup.setRotY(100);
+        mObjectGroup.setRotY(170);
 
         Log.d(TAG, "mObjectGroup RotX: " +mObjectGroup.getRotX());
         Log.d(TAG, "mObjectGroup RotY: " +mObjectGroup.getRotY());

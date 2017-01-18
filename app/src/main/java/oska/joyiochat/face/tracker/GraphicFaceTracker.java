@@ -9,9 +9,11 @@ import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
 import oska.joyiochat.activity.FaceTrackerActivity;
+import oska.joyiochat.listener.FaceInfoDetectListener;
 import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.utils.MobileVisionUtils;
 import oska.joyiochat.utils.RajawaliUtils;
+import oska.joyiochat.utils.Utils;
 import oska.joyiochat.views.GraphicOverlay;
 
 
@@ -32,20 +34,39 @@ public class GraphicFaceTracker extends Tracker<Face> {
     private FaceTrackerActivity activity;
     private Context context;
     private ObjRender objRender;
-
+    private Utils mUtils;
     private int lastEmotionIndex;
     private final float scaleX = 2.88005601079881f;
     private final float scaleY = 3.196312015938482f;
     private double emotionChangeStart, deltaTime;
     private boolean timeLocked;
-    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity,  Context context, ObjRender objRender) {
+    private float faceSmilingRate, faceX, faceY;
+    private FaceInfoDetectListener faceInfoDetectListener = new FaceInfoDetectListener() {
+        @Override
+        public void onSmilingProbabilityChanged(float smilingRate) {
+            faceSmilingRate = smilingRate;
+        }
+
+        @Override
+        public void onFaceXYChanged(float x, float y) {
+            faceX = x;
+            faceY = y;
+            Log.d("onFaceXYChanged",x+"");
+        }
+    };
+    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity,  Context context, ObjRender objRender, Utils utils) {
         mOverlay = overlay;
-        mFaceGraphic = new FaceGraphic(overlay, activity);
+        mUtils = utils;
+        mFaceGraphic = new FaceGraphic(overlay, activity, mUtils, faceInfoDetectListener);
         this.activity = (FaceTrackerActivity)activity;
         this.context = context;
         this.objRender = objRender;
         lastEmotionIndex = -1;
         timeLocked =false;
+
+
+        Log.d("mUtils", "x :" +mUtils.getScreenWidth());
+        Log.d("mUtils", "y :" +mUtils.getScreenWidth());
     }
 
 
@@ -66,20 +87,17 @@ public class GraphicFaceTracker extends Tracker<Face> {
         mOverlay.add(mFaceGraphic);
         mFaceGraphic.updateFace(face);
 
-        if(mFaceGraphic.getSmileRate() > MobileVisionUtils.THRESHOLD_SMILE ){
+        if(faceSmilingRate > MobileVisionUtils.THRESHOLD_SMILE ){
             initFalseDetection();
             if(lastEmotionIndex != MobileVisionUtils.EMOTION_INDEX_SMILE) {
                 renderGlass();
                 lastEmotionIndex = MobileVisionUtils.EMOTION_INDEX_SMILE;
             }
-            objRender.moveSelectedObject(mFaceGraphic.getX()+ RajawaliUtils.glassObjOffsetX ,
-                                         mFaceGraphic.getY()+RajawaliUtils.glassObjOffsetY );
-//            objRender.getObjectAt(leftEyePosX, leftEyePosY);
-//            else
-//                objRender.moveSelectedObject(callOnce,100f);
+            objRender.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
+                                         faceY+ RajawaliUtils.glassObjOffsetY );
         }
 
-        if(mFaceGraphic.getSmileRate() < MobileVisionUtils.THRESHOLD_SAD && lastEmotionIndex == MobileVisionUtils.EMOTION_INDEX_SMILE){
+        if(faceSmilingRate < MobileVisionUtils.THRESHOLD_SAD && lastEmotionIndex == MobileVisionUtils.EMOTION_INDEX_SMILE){
             if(timeLocked == false) {
                 emotionChangeStart = System.currentTimeMillis();
                 timeLocked = true;
@@ -87,7 +105,6 @@ public class GraphicFaceTracker extends Tracker<Face> {
             deltaTime = System.currentTimeMillis() - emotionChangeStart;
 
         }
-        Log.d(TAG," detaTime" + deltaTime);
         if(deltaTime > MobileVisionUtils.FALSE_POSITIVE_FILTER ){
             remove3D();
             lastEmotionIndex = MobileVisionUtils.EMOTION_INDEX_SAD;

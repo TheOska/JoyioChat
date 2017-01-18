@@ -47,6 +47,7 @@ import java.io.IOException;
 import oska.joyiochat.R;
 import oska.joyiochat.face.tracker.GraphicFaceTracker;
 import oska.joyiochat.rajawali.ObjRender;
+import oska.joyiochat.utils.Utils;
 import oska.joyiochat.views.CameraSourcePreview;
 import oska.joyiochat.views.GraphicOverlay;
 
@@ -64,6 +65,11 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
     private static final int RC_HANDLE_GMS = 9001;
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
+    private static final float HIGHEST_FPS = 60.0f;
+    private static final float MID_FPS = 40.0f;
+    private static final float LOW_FPS = 30.0f;
+
+    private Utils mUtils;
     private Activity mRefActivity;
 
     private SurfaceView surface;
@@ -76,6 +82,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.activity_face_detection);
+
 
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
@@ -91,7 +98,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
         mRefActivity = this;
 
         surface = (SurfaceView) findViewById(R.id.rajawali_surface_view);
-        surface.setFrameRate(60.0);
+        surface.setFrameRate(MID_FPS);
         surface.setRenderMode(ISurface.RENDERMODE_CONTINUOUSLY);
         surface.setTransparent(true);
 //
@@ -100,6 +107,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
         surface.setSurfaceRenderer(objRender);
         surface.setOnTouchListener(this);
 
+        mUtils = new Utils(this);
 
     }
 
@@ -162,12 +170,17 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
     private void createCameraSource() {
 
         Context context = getApplicationContext();
-        FaceDetector detector = new FaceDetector.Builder(context)
-//                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
-//                .setTrackingEnabled(false)
-               .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
+        // --------------------------------------------------------------------------------------------------------------//
+        // -----------------------------------------standard face detect in run time (successfully gen 3d obj)------------------------------------//
+//        FaceDetector detector = new FaceDetector.Builder(context)
+//                .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
+//                .build();
+        // --------------------------------------------------------------------------------------------------------------//
+        FaceDetector detector = new FaceDetector.Builder(this)
+                .setTrackingEnabled(true)
+                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+                .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .build();
-
         //receive preview frames from a camera source for the front facing camera, run detection on the frames,
         //manages tracking of the most prominent face
 
@@ -317,7 +330,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
     private class GraphicFaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
         public Tracker<Face> create(Face face) {
-            return new GraphicFaceTracker(mGraphicOverlay, mRefActivity, getApplicationContext(), objRender);
+            return new GraphicFaceTracker(mGraphicOverlay, mRefActivity, getApplicationContext(), objRender, mUtils);
         }
     }
 }

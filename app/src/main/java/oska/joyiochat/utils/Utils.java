@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.Build;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -11,38 +12,34 @@ import android.view.WindowManager;
  * Created by froger_mcs on 05.11.14.
  */
 public class Utils {
-    private static int screenWidth = 0;
-    private static int screenHeight = 0;
-
+    private  int screenWidth = 0;
+    private int screenHeight = 0;
+    private Context context;
     public static int dpToPx(int dp) {
         return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
     }
 
-    public static int getScreenHeight(Context c) {
-        if (screenHeight == 0) {
-            WindowManager wm = (WindowManager) c.getSystemService(Context.WINDOW_SERVICE);
-            //Display type is Provides information about the size and density of a logical display.
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            screenHeight = size.y;
-        }
+    public Utils(Context context){
+        this.context = context;
+        calScreenWidthHeight();
 
-        return screenHeight;
     }
 
-    public static int getScreenWidth(Context c) {
-        if (screenWidth == 0) {
-            WindowManager wm = (WindowManager) c.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            screenWidth = size.x;
-        }
+    private void calScreenWidthHeight(){
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        screenWidth = size.x;
+        screenHeight = size.y;
 
+    }
+    public int getScreenWidth() {
         return screenWidth;
     }
-
+    public int getScreenHeight() {
+        return screenHeight;
+    }
     public static boolean isAndroid5() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }

@@ -11,7 +11,9 @@ import com.google.android.gms.vision.face.Landmark;
 
 import org.rajawali3d.view.SurfaceView;
 
+import oska.joyiochat.listener.FaceInfoDetectListener;
 import oska.joyiochat.rajawali.CustomRenderer;
+import oska.joyiochat.utils.Utils;
 import oska.joyiochat.views.Graphic;
 import oska.joyiochat.views.GraphicOverlay;
 
@@ -47,38 +49,16 @@ class FaceGraphic extends Graphic {
     private Paint mIdPaint;
     private Paint mBoxPaint;
 
-    private float smilingRate;
     private volatile Face mFace;
     private int mFaceId;
-    private float mFaceHappiness;
     private Activity mActivity;
+    private Utils mUtils;
+    private FaceInfoDetectListener faceInfoDetectListener;
 
-    private SurfaceView rajawaliSurfaceView;
-    CustomRenderer renderer;
-
-    FaceGraphic(GraphicOverlay overlay) {
+    FaceGraphic(GraphicOverlay overlay, final Activity activity, Utils utils, FaceInfoDetectListener faceInfoDetectListener) {
         super(overlay);
-
-        mCurrentColorIndex = (mCurrentColorIndex + 1) % COLOR_CHOICES.length;
-        final int selectedColor = COLOR_CHOICES[mCurrentColorIndex];
-
-        mFacePositionPaint = new Paint();
-        mFacePositionPaint.setColor(selectedColor);
-
-        mIdPaint = new Paint();
-        mIdPaint.setColor(selectedColor);
-        mIdPaint.setTextSize(ID_TEXT_SIZE);
-
-        mBoxPaint = new Paint();
-        mBoxPaint.setColor(selectedColor);
-        mBoxPaint.setStyle(Paint.Style.STROKE);
-        mBoxPaint.setStrokeWidth(BOX_STROKE_WIDTH);
-    }
-
-
-    FaceGraphic(GraphicOverlay overlay, final Activity activity) {
-        super(overlay);
-
+        mUtils = utils;
+        this.faceInfoDetectListener = faceInfoDetectListener;
         mCurrentColorIndex = (mCurrentColorIndex + 1) % COLOR_CHOICES.length;
         final int selectedColor = COLOR_CHOICES[mCurrentColorIndex];
 
@@ -96,6 +76,8 @@ class FaceGraphic extends Graphic {
         mActivity = activity;
 
 
+        Log.d("mUtils", "x :" +mUtils.getScreenWidth());
+        Log.d("mUtils", "y :" +mUtils.getScreenWidth());
     }
     void setId(int id) {
         mFaceId = id;
@@ -126,18 +108,10 @@ class FaceGraphic extends Graphic {
         // Draws a circle at the position of the detected face, with the face's track id below.
         x = translateX(face.getPosition().x + face.getWidth() / 2);
         y = translateY(face.getPosition().y + face.getHeight() / 2);
-        smilingRate = face.getIsSmilingProbability();
 
-        if(face.getIsSmilingProbability() > 0.55){
-            //TODO: make a smile 3D object here
-//            smilingCallback.smilingRate(face.getIsSmilingProbability());
-            canvas.drawText("Nice Smile Hahahahahah" , x+300, y+300, mIdPaint);
-            getSmileRate();
-        }
-        if(face.getIsSmilingProbability() < 0.1) {
-            canvas.drawText("Make a smiley face ", x + 300, y + 300, mIdPaint);
-            // TODO: make a sad 3D object here
-        }
+        faceInfoDetectListener.onSmilingProbabilityChanged(face.getIsSmilingProbability());
+        faceInfoDetectListener.onFaceXYChanged(x,y);
+
         canvas.drawCircle(x, y, FACE_POSITION_RADIUS, mFacePositionPaint);
         canvas.drawText("id: " + mFaceId, x + ID_X_OFFSET, y + ID_Y_OFFSET, mIdPaint);
         canvas.drawText("happiness: " + String.format("%.2f", face.getIsSmilingProbability()), x - ID_X_OFFSET, y - ID_Y_OFFSET, mIdPaint);
@@ -145,11 +119,6 @@ class FaceGraphic extends Graphic {
         canvas.drawText("left eye: " + String.format("%.2f", face.getIsLeftEyeOpenProbability()), x - ID_X_OFFSET*2, y - ID_Y_OFFSET*2, mIdPaint);
 
 
-//        for (Landmark landmark : face.getLandmarks()) {
-//            int cx = (int) (landmark.getPosition().x * 3);
-//            int cy = (int) (landmark.getPosition().y * 3);
-//            canvas.drawCircle(cx, cy, 10, mFacePositionPaint);
-//        }
 
         // Draws a bounding box around the face.
          boxXOffset = scaleX(face.getWidth() / 2.0f);
@@ -182,35 +151,8 @@ class FaceGraphic extends Graphic {
                 }
                 int cx = (int) (landmark.getPosition().x * scaleX);
                 int cy = (int) (landmark.getPosition().y * scaleY);
-                canvas.drawCircle(cx, cy, 10, mFacePositionPaint);
+                canvas.drawCircle(Math.abs(mUtils.getScreenWidth() - cx), cy, 10, mFacePositionPaint);
             }
     }
 
-    public float getSmileRate() {
-        return smilingRate;
-    }
-
-    public float getBoxLeft() {
-        return boxLeft;
-    }
-
-    public float getBoxTop() {
-        return boxTop;
-    }
-
-    public float getBoxRight() {
-        return boxRight;
-    }
-
-    public float getBoxBottom() {
-        return boxBottom;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
 }
