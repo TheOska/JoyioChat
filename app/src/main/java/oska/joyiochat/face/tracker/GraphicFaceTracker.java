@@ -40,7 +40,7 @@ public class GraphicFaceTracker extends Tracker<Face> {
     private final float scaleY = 3.196312015938482f;
     private double emotionChangeStart, deltaTime;
     private boolean timeLocked;
-    private float faceSmilingRate, faceX, faceY;
+    private float faceSmilingRate, faceX, faceY, rotationY;
     private FaceInfoDetectListener faceInfoDetectListener = new FaceInfoDetectListener() {
         @Override
         public void onSmilingProbabilityChanged(float smilingRate) {
@@ -51,7 +51,18 @@ public class GraphicFaceTracker extends Tracker<Face> {
         public void onFaceXYChanged(float x, float y) {
             faceX = x;
             faceY = y;
-            Log.d("onFaceXYChanged",x+"");
+        }
+
+        @Override
+        public void onFaceRotationChanged(float y) {
+            Log.d("onFaceRotationChanged" ,"y + " +y);
+            rotationY = y;
+        }
+
+        @Override
+        public void onFaceInOut(float z) {
+            Log.d("onFaceRotationChanged" ,"z + " +z);
+
         }
     };
     public GraphicFaceTracker(GraphicOverlay overlay, Activity activity,  Context context, ObjRender objRender, Utils utils) {
@@ -94,7 +105,8 @@ public class GraphicFaceTracker extends Tracker<Face> {
                 lastEmotionIndex = MobileVisionUtils.EMOTION_INDEX_SMILE;
             }
             objRender.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
-                                         faceY+ RajawaliUtils.glassObjOffsetY );
+                                         faceY+ RajawaliUtils.glassObjOffsetY,
+                                         rotationY);
         }
 
         if(faceSmilingRate < MobileVisionUtils.THRESHOLD_SAD && lastEmotionIndex == MobileVisionUtils.EMOTION_INDEX_SMILE){

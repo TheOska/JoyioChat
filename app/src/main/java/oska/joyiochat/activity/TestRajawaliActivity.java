@@ -56,8 +56,8 @@ public class TestRajawaliActivity extends AppCompatActivity  implements View.OnT
                 break;
             case MotionEvent.ACTION_MOVE:
 //                Log.d("FaceTrackerActivity", "ACTION_MOVE");
-                objRender.moveSelectedObject(event.getX(),
-                        event.getY());
+//                objRender.moveSelectedObject(event.getX(),
+//                        event.getY());
                 break;
             case MotionEvent.ACTION_UP:
                 Log.d("FaceTrackerActivity", "ACTION_UP");

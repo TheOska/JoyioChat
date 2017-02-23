@@ -46,6 +46,8 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     private PointLight mLight;
     private DirectionalLight mDirectionalLight;
     private Context context;
+
+    // Type Object3D can contain more than one 3d elements in one obj file
     private Object3D mObjectGroup;
     private Animation3D mCameraAnim, mLightAnim;
 
@@ -78,7 +80,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mNewObjPos = new Vector3();
         mViewMatrix = getCurrentCamera().getViewMatrix();
         mProjectionMatrix = getCurrentCamera().getProjectionMatrix();
-
+        // picker is the property that user can move the object
         mPicker = new ObjectColorPicker(this);
         mPicker.setOnObjectPickedListener(this);
 
@@ -89,7 +91,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         getCurrentScene().addLight(mLight);
         getCurrentCamera().setZ(16);
 
-
+        // load obj from resouce
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
                 mTextureManager, R.raw.sun_glasses_obj);
 
@@ -181,7 +183,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
      * After gluUnProject the 3D Object:
      * Camera will not after, include camera rotation, distance between scene and camera
      */
-    public void moveSelectedObject(float x, float y) {
+    public void moveSelectedObject(float x, float y, float rotationY) {
         if (mObjectGroup == null)
             return;
         Log.d("ObjRender","moveSelectedObject called");
@@ -223,7 +225,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mNewObjPos.add(mNearPos);
         mObjectGroup.setX(mNewObjPos.x);
         mObjectGroup.setY(mNewObjPos.y);
-        mObjectGroup.setRotY(170);
+        mObjectGroup.setRotY(180+rotationY*1.5);
 
         Log.d(TAG, "mObjectGroup RotX: " +mObjectGroup.getRotX());
         Log.d(TAG, "mObjectGroup RotY: " +mObjectGroup.getRotY());
@@ -235,6 +237,9 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
 //        mObjectGroup = null;
     }
 
+    public void onRotat(float rotationY){
+        mObjectGroup.setRotY(rotationY);
+    }
     public boolean isObjRendered() {
         return objRendered;
     }

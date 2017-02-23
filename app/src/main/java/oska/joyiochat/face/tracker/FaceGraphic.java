@@ -111,13 +111,14 @@ class FaceGraphic extends Graphic {
 
         faceInfoDetectListener.onSmilingProbabilityChanged(face.getIsSmilingProbability());
         faceInfoDetectListener.onFaceXYChanged(x,y);
-
+        faceInfoDetectListener.onFaceRotationChanged(face.getEulerY());
+        faceInfoDetectListener.onFaceInOut(face.getEulerZ());
+        Log.d("faceY",face.getEulerY()+"");
         canvas.drawCircle(x, y, FACE_POSITION_RADIUS, mFacePositionPaint);
         canvas.drawText("id: " + mFaceId, x + ID_X_OFFSET, y + ID_Y_OFFSET, mIdPaint);
         canvas.drawText("happiness: " + String.format("%.2f", face.getIsSmilingProbability()), x - ID_X_OFFSET, y - ID_Y_OFFSET, mIdPaint);
         canvas.drawText("right eye: " + String.format("%.2f", face.getIsRightEyeOpenProbability()), x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 2, mIdPaint);
         canvas.drawText("left eye: " + String.format("%.2f", face.getIsLeftEyeOpenProbability()), x - ID_X_OFFSET*2, y - ID_Y_OFFSET*2, mIdPaint);
-
 
 
         // Draws a bounding box around the face.
@@ -129,16 +130,11 @@ class FaceGraphic extends Graphic {
          boxBottom = y + boxYOffset;
         canvas.drawRect(boxLeft, boxTop, boxRight, boxBottom, mBoxPaint);
 //        canvas.drawPoint();
-        drawLandmark(face ,canvas);
+//        drawLandmark(face ,canvas);
 
     }
 
     private void drawLandmark(Face face, Canvas canvas) {
-//        for (Landmark landmark : face.getLandmarks()) {
-//            int cx = (int) (landmark.getPosition().x * 0.9625);
-//            int cy = (int) (landmark.getPosition().y * 0.9625);
-//            canvas.drawCircle(cx, cy, 10, mFacePositionPaint);
-//        }
 
             for (Landmark landmark : face.getLandmarks()) {
                 switch (landmark.getType()) {

@@ -93,4 +93,6 @@ public class CustomRenderer extends Renderer {
         super.onRender(elapsedTime, deltaTime);
         mEarthSphere.rotate(Vector3.Axis.Y, 1.0);
     }
+
+
 }

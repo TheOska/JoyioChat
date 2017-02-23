@@ -68,6 +68,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
     private static final float HIGHEST_FPS = 60.0f;
     private static final float MID_FPS = 40.0f;
     private static final float LOW_FPS = 30.0f;
+    private static final float LOWEST_FPS = 24.0f;
 
     private Utils mUtils;
     private Activity mRefActivity;
@@ -98,7 +99,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
         mRefActivity = this;
 
         surface = (SurfaceView) findViewById(R.id.rajawali_surface_view);
-        surface.setFrameRate(MID_FPS);
+        surface.setFrameRate(LOWEST_FPS);
         surface.setRenderMode(ISurface.RENDERMODE_CONTINUOUSLY);
         surface.setTransparent(true);
 //
@@ -121,8 +122,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
                 break;
             case MotionEvent.ACTION_MOVE:
 //                Log.d("FaceTrackerActivity", "ACTION_MOVE");
-                objRender.moveSelectedObject(event.getX(),
-                        event.getY());
+//                objRender.moveSelectedObject(event.getX(),
+//                        event.getY());
                 break;
             case MotionEvent.ACTION_UP:
                 Log.d("FaceTrackerActivity", "ACTION_UP");
@@ -178,7 +179,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
         // --------------------------------------------------------------------------------------------------------------//
         FaceDetector detector = new FaceDetector.Builder(this)
                 .setTrackingEnabled(true)
-                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+                .setProminentFaceOnly(true)
+//                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+                .setMode(FaceDetector.ACCURATE_MODE)
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .build();
         //receive preview frames from a camera source for the front facing camera, run detection on the frames,
