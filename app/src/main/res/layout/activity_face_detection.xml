@@ -5,12 +5,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:keepScreenOn="true"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="1">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        android:background="@color/style_color_primary">
+        <ImageView
+            android:layout_marginLeft="16dp"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_clear_white_24dp"/>
+    </LinearLayout>
 
     <oska.joyiochat.views.CameraSourcePreview
         android:id="@+id/preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="0.8"
+
+        >
         <oska.joyiochat.views.GraphicOverlay
             android:id="@+id/faceOverlay"
             android:layout_width="match_parent"
@@ -25,8 +41,14 @@
             android:id="@+id/rajawali_surface_view" />
     </oska.joyiochat.views.CameraSourcePreview>
 
-
-
-
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        android:background="@color/style_color_primary">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_camera_white_36dp"/>
+    </LinearLayout>
 </LinearLayout>

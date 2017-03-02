@@ -110,10 +110,10 @@ class FaceGraphic extends Graphic {
         y = translateY(face.getPosition().y + face.getHeight() / 2);
 
         faceInfoDetectListener.onSmilingProbabilityChanged(face.getIsSmilingProbability());
+        faceInfoDetectListener.onEyesOpenProbabilityChanged(face.getIsLeftEyeOpenProbability(), face.getIsRightEyeOpenProbability());
         faceInfoDetectListener.onFaceXYChanged(x,y);
         faceInfoDetectListener.onFaceRotationChanged(face.getEulerY());
         faceInfoDetectListener.onFaceInOut(face.getEulerZ());
-        Log.d("faceY",face.getEulerY()+"");
         canvas.drawCircle(x, y, FACE_POSITION_RADIUS, mFacePositionPaint);
         canvas.drawText("id: " + mFaceId, x + ID_X_OFFSET, y + ID_Y_OFFSET, mIdPaint);
         canvas.drawText("happiness: " + String.format("%.2f", face.getIsSmilingProbability()), x - ID_X_OFFSET, y - ID_Y_OFFSET, mIdPaint);

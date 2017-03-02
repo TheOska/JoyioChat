@@ -9,4 +9,6 @@ package oska.joyiochat.utils;
 public class RajawaliUtils {
     public static final int glassObjOffsetX = 30;
     public static final int glassObjOffsetY = 120;
+
+    public static final float DEFAULT_CAMERA_Z_POS = 16f;
 }

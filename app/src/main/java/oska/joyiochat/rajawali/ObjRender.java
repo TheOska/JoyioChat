@@ -11,6 +11,7 @@ import org.rajawali3d.animation.Animation;
 import org.rajawali3d.animation.Animation3D;
 import org.rajawali3d.animation.EllipticalOrbitAnimation3D;
 import org.rajawali3d.animation.RotateOnAxisAnimation;
+import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.lights.DirectionalLight;
 import org.rajawali3d.lights.PointLight;
 import org.rajawali3d.loader.LoaderOBJ;
@@ -31,6 +32,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import oska.joyiochat.R;
 import oska.joyiochat.listener.FaceInfoDetectListener;
+import oska.joyiochat.utils.RajawaliUtils;
 
 /**
  * Created by TheOska on 11/22/2016.
@@ -50,7 +52,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     // Type Object3D can contain more than one 3d elements in one obj file
     private Object3D mObjectGroup;
     private Animation3D mCameraAnim, mLightAnim;
-
+    private Camera camera;
     private int[] mViewport;
     private double[] mNearPos4;
     private double[] mFarPos4;
@@ -78,8 +80,9 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mNearPos = new Vector3();
         mFarPos = new Vector3();
         mNewObjPos = new Vector3();
-        mViewMatrix = getCurrentCamera().getViewMatrix();
-        mProjectionMatrix = getCurrentCamera().getProjectionMatrix();
+        camera = getCurrentCamera();
+        mViewMatrix = camera.getViewMatrix();
+        mProjectionMatrix = camera.getProjectionMatrix();
         // picker is the property that user can move the object
         mPicker = new ObjectColorPicker(this);
         mPicker.setOnObjectPickedListener(this);
@@ -89,7 +92,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mLight.setPower(3);
 
         getCurrentScene().addLight(mLight);
-        getCurrentCamera().setZ(16);
+        camera.setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS);
 
         // load obj from resouce
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
@@ -171,8 +174,8 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         Log.d(TAG,"onRenderSurfaceSizeChanged called"  );
         mViewport[2] = getViewportWidth();
         mViewport[3] = getViewportHeight();
-        mViewMatrix = getCurrentCamera().getViewMatrix();
-        mProjectionMatrix = getCurrentCamera().getProjectionMatrix();
+        mViewMatrix = camera.getViewMatrix();
+        mProjectionMatrix = camera.getProjectionMatrix();
     }
     public void getObjectAt(float x, float y) {
         mPicker.getObjectAt(x, y);
@@ -216,7 +219,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         //
 
         double factor = (Math.abs(mObjectGroup.getZ()) + mNearPos.z)
-                / (getCurrentCamera().getFarPlane() - getCurrentCamera()
+                / (camera.getFarPlane() - camera
                 .getNearPlane());
 
         mNewObjPos.setAll(mFarPos);
@@ -226,7 +229,6 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mObjectGroup.setX(mNewObjPos.x);
         mObjectGroup.setY(mNewObjPos.y);
         mObjectGroup.setRotY(180+rotationY*1.5);
-
         Log.d(TAG, "mObjectGroup RotX: " +mObjectGroup.getRotX());
         Log.d(TAG, "mObjectGroup RotY: " +mObjectGroup.getRotY());
         Log.d(TAG, "mObjectGroup RotZ: " +mObjectGroup.getRotZ());
@@ -237,14 +239,9 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
 //        mObjectGroup = null;
     }
 
-    public void onRotat(float rotationY){
-        mObjectGroup.setRotY(rotationY);
-    }
-    public boolean isObjRendered() {
-        return objRendered;
-    }
-
-    public void setObjRendered(boolean objRendered) {
-        this.objRendered = objRendered;
+    public void zoomInOutObj(float z){
+        Log.d("zoomInOutObj", "z face index is " + z);
+        z = z/ 1.5f;
+        camera.setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS - z);
     }
 }

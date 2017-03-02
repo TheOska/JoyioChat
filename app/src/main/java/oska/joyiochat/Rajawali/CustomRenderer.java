@@ -14,6 +14,7 @@ import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 
 import oska.joyiochat.R;
+import oska.joyiochat.utils.RajawaliUtils;
 
 /**
  * Created by TheOska on 11/20/2016.
@@ -55,7 +56,7 @@ public class CustomRenderer extends Renderer {
         mEarthSphere = new Sphere(1, 24, 24);
         mEarthSphere.setMaterial(material);
         getCurrentScene().addChild(mEarthSphere);
-        getCurrentCamera().setZ(4.2f);
+        getCurrentCamera().setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS);
     }
 
     public void dontRen(){

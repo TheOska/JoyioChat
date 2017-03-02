@@ -8,6 +8,8 @@ public interface FaceInfoDetectListener {
 
     void onSmilingProbabilityChanged(float smilingRate);
 
+    void onEyesOpenProbabilityChanged(float eyeLeft, float eyeRight);
+
     void onFaceXYChanged(float x, float y);
 
     void onFaceRotationChanged(float y);

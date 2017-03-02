@@ -35,16 +35,21 @@ public class GraphicFaceTracker extends Tracker<Face> {
     private Context context;
     private ObjRender objRender;
     private Utils mUtils;
-    private int lastEmotionIndex;
+    private int lastEmotionIndex, lastEyeOpenIndex;
     private final float scaleX = 2.88005601079881f;
     private final float scaleY = 3.196312015938482f;
     private double emotionChangeStart, deltaTime;
     private boolean timeLocked;
-    private float faceSmilingRate, faceX, faceY, rotationY;
+    private float faceSmilingRate, eyesLeftOpenRate, faceX, faceY, faceZ, rotationY;
     private FaceInfoDetectListener faceInfoDetectListener = new FaceInfoDetectListener() {
         @Override
         public void onSmilingProbabilityChanged(float smilingRate) {
             faceSmilingRate = smilingRate;
+        }
+
+        @Override
+        public void onEyesOpenProbabilityChanged(float eyeLeft, float eyeRight) {
+            eyesLeftOpenRate = eyeLeft;
         }
 
         @Override
@@ -55,14 +60,12 @@ public class GraphicFaceTracker extends Tracker<Face> {
 
         @Override
         public void onFaceRotationChanged(float y) {
-            Log.d("onFaceRotationChanged" ,"y + " +y);
             rotationY = y;
         }
 
         @Override
         public void onFaceInOut(float z) {
-            Log.d("onFaceRotationChanged" ,"z + " +z);
-
+            faceZ = z;
         }
     };
     public GraphicFaceTracker(GraphicOverlay overlay, Activity activity,  Context context, ObjRender objRender, Utils utils) {
@@ -98,6 +101,42 @@ public class GraphicFaceTracker extends Tracker<Face> {
         mOverlay.add(mFaceGraphic);
         mFaceGraphic.updateFace(face);
 
+//        checkSmilingCondition();
+        checkEyeOpenCondition();
+
+    }
+
+    private void checkEyeOpenCondition() {
+
+        if(eyesLeftOpenRate > MobileVisionUtils.THRESHOLD_EYE_LEFT_OPEN ){
+            initFalseDetection();
+            if(lastEyeOpenIndex != MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN) {
+                renderGlass();
+                lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
+            }
+            objRender.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
+                    faceY+ RajawaliUtils.glassObjOffsetY,
+                    rotationY);
+            objRender.zoomInOutObj(-faceZ);
+        }
+
+        if(lastEyeOpenIndex < MobileVisionUtils.THRESHOLD_EYE_LEFT_CLOSE && lastEyeOpenIndex == MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN){
+            if(timeLocked == false) {
+                emotionChangeStart = System.currentTimeMillis();
+                timeLocked = true;
+            }
+            deltaTime = System.currentTimeMillis() - emotionChangeStart;
+
+        }
+        if(deltaTime > MobileVisionUtils.FALSE_POSITIVE_FILTER ){
+            remove3D();
+            lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_CLOSE;
+        }
+
+    }
+
+    private void checkSmilingCondition() {
+
         if(faceSmilingRate > MobileVisionUtils.THRESHOLD_SMILE ){
             initFalseDetection();
             if(lastEmotionIndex != MobileVisionUtils.EMOTION_INDEX_SMILE) {
@@ -105,8 +144,8 @@ public class GraphicFaceTracker extends Tracker<Face> {
                 lastEmotionIndex = MobileVisionUtils.EMOTION_INDEX_SMILE;
             }
             objRender.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
-                                         faceY+ RajawaliUtils.glassObjOffsetY,
-                                         rotationY);
+                    faceY+ RajawaliUtils.glassObjOffsetY,
+                    rotationY);
         }
 
         if(faceSmilingRate < MobileVisionUtils.THRESHOLD_SAD && lastEmotionIndex == MobileVisionUtils.EMOTION_INDEX_SMILE){
@@ -121,7 +160,6 @@ public class GraphicFaceTracker extends Tracker<Face> {
             remove3D();
             lastEmotionIndex = MobileVisionUtils.EMOTION_INDEX_SAD;
         }
-
     }
 
     private void initFalseDetection() {
