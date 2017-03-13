@@ -8,7 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import oska.joyiochat.R;
 
@@ -18,11 +18,11 @@ import oska.joyiochat.R;
 public class BaseActivity extends AppCompatActivity {
 
     @Nullable
-    @Bind(R.id.toolbar)
+    @BindView(R.id.toolbar)
     Toolbar toolbar;
 
     @Nullable
-    @Bind(R.id.comeLogo)
+    @BindView(R.id.comeLogo)
     ImageView comeLogo;
 
     private MenuItem inboxMenuItem;

@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import butterknife.Bind;
+
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import oska.joyiochat.R;
 import oska.joyiochat.module.FavPeopleItem;
@@ -83,17 +84,16 @@ public class FavPeopleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     public static class FavViewHolder extends RecyclerView.ViewHolder {
-        @Bind(R.id.fav_image)
         ImageView favImage;
-
-        @Bind(R.id.fav_name)
         TextView favName;
 
         FavPeopleItem favPeopleItem;
 
         public FavViewHolder(View view) {
             super(view);
-            ButterKnife.bind(this, view);
+//            ButterKnife.bind(this, view);
+            favImage = (ImageView) view.findViewById(R.id.fav_image);
+            favName = (TextView) view.findViewById(R.id.fav_name);
         }
 
         public void bindView(FavPeopleItem favPeopleItem) {

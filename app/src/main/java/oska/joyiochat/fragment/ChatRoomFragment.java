@@ -17,7 +17,8 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
+
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import oska.joyiochat.R;
 import oska.joyiochat.activity.FaceTrackerActivity;
@@ -37,10 +38,10 @@ public class ChatRoomFragment extends Fragment implements
         FavPeopleAdapter.OnFavPeopleItemClickListener,
         ChatContactAdapter.OnChatContactItemClickListener{
 
-    @Bind(R.id.recycler_fav_people)
+
     RecyclerView rvFavPeople;
 
-    @Bind(R.id.recycler_contact_chat)
+
     RecyclerView rvContactChat;
 
     private GridLayoutManager gridLayoutManager;
@@ -56,7 +57,9 @@ public class ChatRoomFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat_room, container, false);
-        ButterKnife.bind(this, view);
+        ButterKnife.bind(this,view);
+        rvFavPeople = (RecyclerView) view.findViewById(R.id.recycler_fav_people);
+        rvContactChat = (RecyclerView) view.findViewById(R.id.recycler_contact_chat);
         initItemList();
         initFavContactRecyclerView();
         initChatContactRecyclerView();
@@ -94,13 +97,13 @@ public class ChatRoomFragment extends Fragment implements
         int spacingInPixels = 1;
 
         gridLayoutManager = new GridLayoutManager(getContext(),2);
-        rvFavPeople.setHasFixedSize(true);
         gridLayoutManager.setOrientation(GridLayoutManager.VERTICAL);
         rvFavPeople.setLayoutManager(gridLayoutManager);
 
         mFavPeopleAdapter = new FavPeopleAdapter(this.getContext(), favPeopleItemArrayList);
         mFavPeopleAdapter.setOnFavPeopleItemClickListener(this);
         rvFavPeople.setAdapter(mFavPeopleAdapter);
+        rvFavPeople.setHasFixedSize(true);
 
         rvFavPeople.addItemDecoration(new SpacesItemDecoration(spacingInPixels));
     }

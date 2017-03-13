@@ -9,4 +9,10 @@
     <dimen name="user_profile_avatar_size">88dp</dimen>
     <dimen name="global_menu_avatar_size">64dp</dimen>
     <dimen name="publish_photo_thumbnail_size">96dp</dimen>
+
+    <dimen name="content_padding">16dp</dimen>
+    <dimen name="content_margin_16">16dp</dimen>
+    <dimen name="overlay_width">112dp</dimen>
+    <dimen name="preference_height">48dp</dimen>
+    <dimen name="music_title">20dp</dimen>
 </resources>

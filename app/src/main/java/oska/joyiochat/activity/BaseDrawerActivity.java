@@ -12,9 +12,9 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
-import butterknife.Bind;
 import butterknife.BindDimen;
 import butterknife.BindString;
+import butterknife.BindView;
 import oska.joyiochat.R;
 import oska.joyiochat.utils.CircleTransformation;
 
@@ -23,9 +23,9 @@ import oska.joyiochat.utils.CircleTransformation;
  */
 public class BaseDrawerActivity extends BaseActivity {
 
-    @Bind(R.id.drawerLayout)
+    @BindView(R.id.drawerLayout)
     DrawerLayout drawerLayout;
-    @Bind(R.id.vNavigation)
+    @BindView(R.id.vNavigation)
     NavigationView vNavigation;
 
     @BindDimen(R.dimen.global_menu_avatar_size)

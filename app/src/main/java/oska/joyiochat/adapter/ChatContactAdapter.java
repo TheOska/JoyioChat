@@ -11,7 +11,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
+
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import oska.joyiochat.R;
 import oska.joyiochat.module.ChatContactItem;
@@ -83,17 +84,16 @@ public class ChatContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     public static class ChatContactHolder extends RecyclerView.ViewHolder {
-        @Bind(R.id.chat_contact_profile_image)
         ImageView profileImage;
-
-        @Bind(R.id.chat_contact_name)
         TextView contactName;
 
         ChatContactItem chatContactItem;
 
         public ChatContactHolder(View view) {
             super(view);
-            ButterKnife.bind(this, view);
+//            ButterKnife.bind(this, view);
+            profileImage = (ImageView) view.findViewById(R.id.chat_contact_profile_image);
+            contactName = (TextView) view.findViewById(R.id.chat_contact_name);
         }
 
         public void bindView(ChatContactItem chatContactItem) {

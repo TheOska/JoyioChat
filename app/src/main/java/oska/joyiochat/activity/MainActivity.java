@@ -12,8 +12,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 
-import butterknife.Bind;
 
+import butterknife.BindView;
 import oska.joyiochat.R;
 import oska.joyiochat.utils.Utils;
 
@@ -22,10 +22,10 @@ public class MainActivity extends BaseDrawerActivity{
 
     private static final int ANIM_DURATION_TOOLBAR = 300;
 
-    @Bind(R.id.rvFeed)
+    @BindView(R.id.rvFeed)
     RecyclerView rvFeed;
 
-    @Bind(R.id.content)
+    @BindView(R.id.content)
     CoordinatorLayout clContent;
 
 

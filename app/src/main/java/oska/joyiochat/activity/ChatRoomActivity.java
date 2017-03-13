@@ -1,61 +1,52 @@
 package oska.joyiochat.activity;
 
-/**
- * Created by TheOSka on 20/6/2016.
- */
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-
 
 import butterknife.BindView;
 import oska.joyiochat.R;
 import oska.joyiochat.adapter.ViewPagerAdapter;
 import oska.joyiochat.utils.Utils;
 
-public class HomePageActivity  extends BaseActivity{
+/**
+ * Created by theoska on 3/10/17.
+ */
 
+public class ChatRoomActivity extends AppCompatActivity {
 
-    //Declaring All The Variables Needed
-//    @Bind(R.id.tool_bar)
-//    Toolbar toolbar;
-
-    @BindView(R.id.tabs_layout)
     TabLayout tabLayout;
 
-    @BindView(R.id.viewpager)
+
     ViewPager viewPager;
 
     private ViewPagerAdapter viewPagerAdapter;
 
-    private static final int ANIM_DURATION_TOOLBAR = 300;
-    private static final int ANIM_DURATION_FAB = 400;
-
-    private boolean pendingOpenAppAnimation;
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_homepage);
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        tabLayout = (TabLayout) findViewById(R.id.tabs_layout);
         //BindView Function complete in BaseActivity
-        if (savedInstanceState == null) {
-            pendingOpenAppAnimation = true;
-        }
+//        if (savedInstanceState == null) {
+//            pendingOpenAppAnimation = true;
+//        }
         initViewPager();
 //        initToolbar();
         initTabs();
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
-
     }
-
-    private void initToolbar() {setSupportActionBar(toolbar);}
+    private void initToolbar() {
+//        setSupportActionBar(toolbar);
+    }
 
     private void initViewPager() {
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -80,10 +71,10 @@ public class HomePageActivity  extends BaseActivity{
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         // wait until option menu is created
-        if (pendingOpenAppAnimation) {
-            pendingOpenAppAnimation = false;
-            startOpenAppAnimation();
-        }
+//        if (pendingOpenAppAnimation) {
+//            pendingOpenAppAnimation = false;
+//            startOpenAppAnimation();
+//        }
         return true;
     }
 
@@ -100,28 +91,6 @@ public class HomePageActivity  extends BaseActivity{
         return super.onOptionsItemSelected(item);
     }
 
-    private void startOpenAppAnimation() {
-//        fabCreate.setTranslationY(2 * getResources().getDimensionPixelOffset(R.dimen.btn_fab_size));
-
-        int actionbarSize = Utils.dpToPx(56);
-        getToolbar().setTranslationY(-actionbarSize);
-        getComehereLogo().setTranslationY(-actionbarSize);
-        getInboxMenuItem().getActionView().setTranslationY(-actionbarSize);
-
-        getToolbar().animate()
-                .translationY(0)
-                .setDuration(ANIM_DURATION_TOOLBAR)
-                .setStartDelay(300);
-        getComehereLogo().animate()
-                .translationY(0)
-                .setDuration(ANIM_DURATION_TOOLBAR)
-                .setStartDelay(400);
-        getInboxMenuItem().getActionView().animate()
-                .translationY(0)
-                .setDuration(ANIM_DURATION_TOOLBAR)
-                .setStartDelay(500)
-                .start();
-    }
 
 
 }
