@@ -192,7 +192,7 @@ final class RecordingSession {
   }
 
   private void startRecording() {
-    hideStatusBar();
+//    hideStatusBar();
     if (!outputRoot.exists() && !outputRoot.mkdirs()) {
       Toast.makeText(context, "Unable to create output directory.\nCannot record screen.",
           LENGTH_SHORT).show();

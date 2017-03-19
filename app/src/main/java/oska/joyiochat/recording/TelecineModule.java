@@ -20,7 +20,7 @@ import static android.content.Context.MODE_PRIVATE;
 @Module
 final class TelecineModule {
   private static final String PREFERENCES_NAME = "telecine";
-  private static final boolean DEFAULT_SHOW_COUNTDOWN = true;
+  private static final boolean DEFAULT_SHOW_COUNTDOWN = false;
   private static final boolean DEFAULT_HIDE_FROM_RECENTS = false;
   private static final boolean DEFAULT_SHOW_TOUCHES = false;
   private static final boolean DEFAULT_RECORDING_NOTIFICATION = false;
@@ -53,7 +53,7 @@ final class TelecineModule {
 
   @Provides @ShowCountdown
   Boolean provideShowCountdown(@ShowCountdown BooleanPreference pref) {
-    return pref.get();
+    return DEFAULT_SHOW_COUNTDOWN;
   }
 
   @Provides @Singleton @RecordingNotification
@@ -64,7 +64,7 @@ final class TelecineModule {
   @Provides @RecordingNotification
   Boolean provideRecordingNotification(
       @RecordingNotification BooleanPreference pref) {
-    return pref.get();
+    return DEFAULT_RECORDING_NOTIFICATION;
   }
 
   @Provides @Singleton @HideFromRecents BooleanPreference provideHideFromRecentsPreference(
@@ -79,7 +79,7 @@ final class TelecineModule {
 
   @Provides @ShowTouches
   Boolean provideShowTouches(@ShowTouches BooleanPreference pref) {
-    return pref.get();
+    return DEFAULT_SHOW_TOUCHES;
   }
 
 
@@ -92,6 +92,6 @@ final class TelecineModule {
   @Provides @VideoSizePercentage
   Integer provideVideoSizePercentage(
       @VideoSizePercentage IntPreference pref) {
-    return pref.get();
+    return DEFAULT_VIDEO_SIZE_PERCENTAGE;
   }
 }

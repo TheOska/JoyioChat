@@ -23,14 +23,14 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
 import java.util.List;
 
-import oska.joyiochat.recording.LetterRecordActivity;
+import oska.joyiochat.activity.FaceTrackerActivity;
 
 
-public class LetterRecordingMultiplePermissionListener implements MultiplePermissionsListener {
+public class FaceTrackingMultiplePermissionListener implements MultiplePermissionsListener {
 
-  private final LetterRecordActivity activity;
+  private final FaceTrackerActivity activity;
 
-  public LetterRecordingMultiplePermissionListener(LetterRecordActivity activity) {
+  public FaceTrackingMultiplePermissionListener(FaceTrackerActivity activity) {
     this.activity = activity;
   }
 

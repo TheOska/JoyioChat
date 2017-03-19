@@ -16,20 +16,32 @@
 package oska.joyiochat.activity;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -38,26 +50,44 @@ import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.listener.multi.CompositeMultiplePermissionsListener;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+import com.karumi.dexter.listener.multi.SnackbarOnAnyDeniedMultiplePermissionsListener;
 
 import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.SurfaceView;
 
 import java.io.IOException;
 
+import butterknife.BindColor;
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import oska.joyiochat.R;
 import oska.joyiochat.face.tracker.GraphicFaceTracker;
+import oska.joyiochat.permission.FaceTrackingMultiplePermissionListener;
 import oska.joyiochat.rajawali.ObjRender;
+import oska.joyiochat.recording.CaptureHelper;
+import oska.joyiochat.recording.LetterRecordActivity;
 import oska.joyiochat.utils.Utils;
 import oska.joyiochat.views.CameraSourcePreview;
 import oska.joyiochat.views.GraphicOverlay;
+
+import static android.graphics.Bitmap.Config.ARGB_8888;
 
 /**
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
  */
-public final class FaceTrackerActivity extends AppCompatActivity implements View.OnTouchListener {
+public final class FaceTrackerActivity extends AppCompatActivity {
     private static final String TAG = "FaceTracker";
-
+    int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
+    @BindView(R.id.topLayout) LinearLayout llRoot;
+    @BindString(R.string.app_name) String appName;
+    @BindColor(R.color.primary_normal) int primaryNormal;
+    @BindView(R.id.iv_capture_video) ImageView ivCaptureVideo;
     private CameraSource mCameraSource = null;
 
     private CameraSourcePreview mPreview;
@@ -76,6 +106,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
     private SurfaceView surface;
     ObjRender objRender;
 
+    private MultiplePermissionsListener allPermissionsListener;
+
     /**
      * Initializes the UI and initiates the creation of a face detector.
      */
@@ -83,8 +115,42 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.activity_face_detection);
+        Dexter.initialize(this);
+        ButterKnife.bind(this);
+        init3DModelSetting();
+        initScreenRecording();
 
 
+    }
+
+    private void initScreenRecording() {
+        createPermissionListeners();
+        setTaskDescription(new ActivityManager.TaskDescription(appName, rasterizeTaskIcon(), primaryNormal));
+
+        if (checkDrawOverlay()) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivityForResult(intent, CaptureHelper.CREATE_SCREEN_CAPTURE);
+        }
+        if (ContextCompat.checkSelfPermission(FaceTrackerActivity.this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(FaceTrackerActivity.this,
+                    Manifest.permission.READ_CONTACTS)) {
+            } else {
+                ActivityCompat.requestPermissions(FaceTrackerActivity.this,
+                        new String[]{Manifest.permission.READ_CONTACTS},
+                        MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+            }
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private boolean checkDrawOverlay(){
+        return !Settings.canDrawOverlays(this);
+    }
+    private void init3DModelSetting() {
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
 
@@ -102,42 +168,15 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
         surface.setFrameRate(LOWEST_FPS);
         surface.setRenderMode(ISurface.RENDERMODE_CONTINUOUSLY);
         surface.setTransparent(true);
-//
         objRender = new ObjRender(this);
-//        renderer = new CustomRenderer(this);
         surface.setSurfaceRenderer(objRender);
-        surface.setOnTouchListener(this);
 
         mUtils = new Utils(this);
-
     }
-
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-//        Log.d("FaceTrackerActivity", "onTouch");
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-//                Log.d("FaceTrackerActivity", "ACTION_DOWN");
-//                objRender.getObjectAt(event.getX(), event.getY());
-                break;
-            case MotionEvent.ACTION_MOVE:
-//                Log.d("FaceTrackerActivity", "ACTION_MOVE");
-//                objRender.moveSelectedObject(event.getX(),
-//                        event.getY());
-                break;
-            case MotionEvent.ACTION_UP:
-                Log.d("FaceTrackerActivity", "ACTION_UP");
-                objRender.stopMovingSelectedObject();
-                break;
-        }
-        return true;
+    @OnClick(R.id.iv_capture_video)
+    public void onClickCapture(){
+        CaptureHelper.fireScreenCaptureIntent(this);
     }
-
-    /**
-     * Handles the requesting of the camera permission.  This includes
-     * showing a "Snackbar" message of why the permission is needed then
-     * sending the request.
-     */
     private void requestCameraPermission() {
         Log.w(TAG, "Camera permission is not granted. Requesting permission");
 
@@ -184,22 +223,11 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
                 .setMode(FaceDetector.ACCURATE_MODE)
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .build();
-        //receive preview frames from a camera source for the front facing camera, run detection on the frames,
-        //manages tracking of the most prominent face
-
         detector.setProcessor(
                 new MultiProcessor.Builder<>(new GraphicFaceTrackerFactory())
                         .build());
 
         if (!detector.isOperational()) {
-            // Note: The first time that an app using face API is installed on a device, GMS will
-            // download a native library to the device in order to do detection.  Usually this
-            // completes before the app is run for the first time.  But if that download has not yet
-            // completed, then the above call will not detect any faces.
-            //
-            // isOperational() can be used to check if the required native library is currently
-            // available.  The detector will automatically become operational once the library
-            // download completes on device.
             Log.w(TAG, "Face detector dependencies are not yet available.");
         }
         mCameraSource = new CameraSource.Builder(context, detector)
@@ -216,12 +244,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
     @Override
     protected void onResume() {
         super.onResume();
-
         startCameraSource();
 
     }
-
-
 
     /**
      * Stops the camera.
@@ -336,4 +361,54 @@ public final class FaceTrackerActivity extends AppCompatActivity implements View
             return new GraphicFaceTracker(mGraphicOverlay, mRefActivity, getApplicationContext(), objRender, mUtils);
         }
     }
+
+
+    private void createPermissionListeners() {
+
+        MultiplePermissionsListener feedbackViewMultiplePermissionListener =
+                new FaceTrackingMultiplePermissionListener(this);
+
+        allPermissionsListener =
+                new CompositeMultiplePermissionsListener(feedbackViewMultiplePermissionListener,
+                        SnackbarOnAnyDeniedMultiplePermissionsListener.Builder.with(llRoot,
+                                R.string.all_permissions_denied_feedback)
+                                .withOpenSettingsButton(R.string.permission_rationale_settings_button_text)
+                                .build());
+
+        if (Dexter.isRequestOngoing()) {
+            return;
+        }
+        Dexter.checkPermissions(allPermissionsListener, Manifest.permission.SYSTEM_ALERT_WINDOW,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.WRITE_SETTINGS);
+    }
+
+    @NonNull
+    private Bitmap rasterizeTaskIcon() {
+        Drawable drawable = getResources().getDrawable(R.drawable.ic_videocam_white_24dp, getTheme());
+
+        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        int size = am.getLauncherLargeIconSize();
+        Bitmap icon = Bitmap.createBitmap(size, size, ARGB_8888);
+
+        Canvas canvas = new Canvas(icon);
+        drawable.setBounds(0, 0, size, size);
+        drawable.draw(canvas);
+
+        return icon;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (!CaptureHelper.handleActivityResult(this, requestCode, resultCode, data)) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+        if (requestCode == CaptureHelper.CREATE_SCREEN_CAPTURE) {
+            if (checkDrawOverlay()) {
+                Toast.makeText(this, "not granded", Toast.LENGTH_LONG).show();
+            }
+        }
+
+    }
+
+
 }

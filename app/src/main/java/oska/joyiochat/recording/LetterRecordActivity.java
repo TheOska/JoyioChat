@@ -17,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -41,7 +42,7 @@ import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 import butterknife.OnItemSelected;
 import oska.joyiochat.R;
-import oska.joyiochat.permission.LetterRecordingMultiplePermissionListener;
+import oska.joyiochat.permission.TempMultiplePermissionListener;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
@@ -116,6 +117,12 @@ public final class LetterRecordActivity extends AppCompatActivity {
         Dexter.initialize(this);
         createPermissionListeners();
         initViews();
+        Log.d("oska", "video size preference " + videoSizePreference.get());
+        Log.d("oska", "showCountdownPreference preference " + showCountdownPreference.get());
+        Log.d("oska", "hideFromRecentsPreference preference " + hideFromRecentsPreference.get());
+        Log.d("oska", "recordingNotificationPreference preference " + recordingNotificationPreference.get());
+        Log.d("oska", "showTouchesPreference preference " + showTouchesPreference.get());
+
         setTaskDescription(new TaskDescription(appName, rasterizeTaskIcon(), primaryNormal));
 
         videoSizePercentageAdapter = new VideoSizePercentageAdapter(this);
@@ -128,6 +135,8 @@ public final class LetterRecordActivity extends AppCompatActivity {
         hideFromRecentsView.setChecked(hideFromRecentsPreference.get());
         recordingNotificationView.setChecked(recordingNotificationPreference.get());
         showTouchesView.setChecked(showTouchesPreference.get());
+
+        /* fire capture video */
         if (checkDrawOverlay()) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:" + getPackageName()));
@@ -159,7 +168,7 @@ public final class LetterRecordActivity extends AppCompatActivity {
                 // result of the request.
             }
         }
-        hideStatusBar();
+//        hideStatusBar();
     }
 
     private void initViews() {
@@ -172,7 +181,7 @@ public final class LetterRecordActivity extends AppCompatActivity {
     private void createPermissionListeners() {
 
         MultiplePermissionsListener feedbackViewMultiplePermissionListener =
-                new LetterRecordingMultiplePermissionListener(this);
+                new TempMultiplePermissionListener(this);
         allPermissionsListener =
                 new CompositeMultiplePermissionsListener(feedbackViewMultiplePermissionListener,
                         SnackbarOnAnyDeniedMultiplePermissionsListener.Builder.with(rootView,

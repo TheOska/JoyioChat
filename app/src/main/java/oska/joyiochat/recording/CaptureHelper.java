@@ -7,7 +7,7 @@ import android.util.Log;
 
 import static android.content.Context.MEDIA_PROJECTION_SERVICE;
 
-final class CaptureHelper {
+public final class CaptureHelper {
   public static final int CREATE_SCREEN_CAPTURE = 4242;
 
   private CaptureHelper() {
@@ -16,7 +16,7 @@ final class CaptureHelper {
     throw new AssertionError("No instances.");
   }
 
-  static void fireScreenCaptureIntent(Activity activity) {
+  public static void fireScreenCaptureIntent(Activity activity) {
     Log.d("oska", "fireScreenCaptureIntent");
 
     MediaProjectionManager manager =
@@ -28,7 +28,7 @@ final class CaptureHelper {
 
   }
 
-  static boolean handleActivityResult(Activity activity, int requestCode, int resultCode,
+  public static boolean handleActivityResult(Activity activity, int requestCode, int resultCode,
                                       Intent data) {
     if (requestCode != CREATE_SCREEN_CAPTURE) {
       return false;
