@@ -6,15 +6,20 @@ import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.squareup.otto.Subscribe;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 
 import oska.joyiochat.R;
+import oska.joyiochat.eventbus.BusStation;
+import oska.joyiochat.eventbus.CaptureMessage;
 
 import static android.app.Notification.PRIORITY_MIN;
 
@@ -24,6 +29,8 @@ public final class TelecineService extends Service {
   private static final int NOTIFICATION_ID = 99118822;
   private static final String SHOW_TOUCHES = "show_touches";
   private static Activity refActivity;
+  IBinder mBinder = new LocalBinder();
+
   static Intent newIntent(Context context, int resultCode, Intent data, Activity activity) {
     Log.d("oska", "TelecineService");
     refActivity = activity;
@@ -102,18 +109,42 @@ public final class TelecineService extends Service {
         new RecordingSession(this, listener, resultCode, data, showCountdownProvider,
             videoSizePercentageProvider, refActivity);
     recordingSession.showOverlay();
-
     return START_NOT_STICKY;
   }
+  @Subscribe
+  public void stopRecordingBusStation(CaptureMessage message){
+    Log.d("oska","receive bus message");
+    if(message.getMsg().toString().equals("stop")){
+      recordingSession.stopRecording();
 
-  @Override
+    }
+  }  @Override
   public void onDestroy() {
     recordingSession.destroy();
+    BusStation.getBus().unregister(this);
+
     super.onDestroy();
   }
 
   @Override
+  public void onCreate() {
+    super.onCreate();
+    BusStation.getBus().register(this);
+
+  }
+
+  @Override
   public IBinder onBind(@NonNull Intent intent) {
-    throw new AssertionError("Not supported.");
+//    throw new AssertionError("Not supported.");
+    return mBinder;
+  }
+
+  public class LocalBinder extends Binder {
+    public TelecineService getServerInstance() {
+      return TelecineService.this;
+    }
+  }
+  public void triggerService(){
+    Log.d("oska", "trigger service function");
   }
 }

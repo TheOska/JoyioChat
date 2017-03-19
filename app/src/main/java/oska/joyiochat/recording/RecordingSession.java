@@ -29,6 +29,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.squareup.otto.Subscribe;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -39,6 +41,8 @@ import java.util.Locale;
 import javax.inject.Provider;
 
 import oska.joyiochat.R;
+import oska.joyiochat.eventbus.BusStation;
+import oska.joyiochat.eventbus.CaptureMessage;
 
 import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
 import static android.content.Context.MEDIA_PROJECTION_SERVICE;
@@ -116,6 +120,7 @@ final class RecordingSession {
       Log.d("oska", "activity is null");
     File picturesDir = Environment.getExternalStoragePublicDirectory(DIRECTORY_MOVIES);
     outputRoot = new File(picturesDir, "Secrush");
+//    BusStation.getBus().register(this);
 
     notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
     windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
@@ -137,6 +142,7 @@ final class RecordingSession {
 
       @Override
       public void onStop() {
+        Log.d("oska", "stop video called onStop function");
         stopRecording();
       }
 
@@ -233,8 +239,14 @@ final class RecordingSession {
 
 
   }
-
-  private void stopRecording() {
+//  @Subscribe
+//  public void stopRecordingBusStation(CaptureMessage message){
+//    Log.d("oska","receive bus message");
+//    if(message.getMsg().toString().equals("stop")){
+//      stopRecording();
+//    }
+//  }
+  public void stopRecording() {
 
     if (!running) {
       throw new IllegalStateException("Not running.");
@@ -261,6 +273,8 @@ final class RecordingSession {
           throw e; // Only allow listener exceptions to propagate if stopped successfully.
         }
       }
+//      BusStation.getBus().unregister(this);
+
     }
 
     long recordingStopNanos = System.nanoTime();
@@ -417,6 +431,7 @@ final class RecordingSession {
 
   void destroy() {
     if (running) {
+      Log.d("oska", "stop video called on destroy function");
       stopRecording();
     }
   }

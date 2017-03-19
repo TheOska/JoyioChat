@@ -66,11 +66,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import oska.joyiochat.R;
+import oska.joyiochat.eventbus.BusStation;
+import oska.joyiochat.eventbus.CaptureMessage;
 import oska.joyiochat.face.tracker.GraphicFaceTracker;
 import oska.joyiochat.permission.FaceTrackingMultiplePermissionListener;
 import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.recording.CaptureHelper;
 import oska.joyiochat.recording.LetterRecordActivity;
+import oska.joyiochat.recording.TelecineService;
 import oska.joyiochat.utils.Utils;
 import oska.joyiochat.views.CameraSourcePreview;
 import oska.joyiochat.views.GraphicOverlay;
@@ -99,10 +102,10 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     private static final float MID_FPS = 40.0f;
     private static final float LOW_FPS = 30.0f;
     private static final float LOWEST_FPS = 24.0f;
-
+    private boolean startedCapturing;
     private Utils mUtils;
     private Activity mRefActivity;
-
+    private TelecineService telecineService;
     private SurfaceView surface;
     ObjRender objRender;
 
@@ -124,6 +127,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     }
 
     private void initScreenRecording() {
+        startedCapturing = false;
         createPermissionListeners();
         setTaskDescription(new ActivityManager.TaskDescription(appName, rasterizeTaskIcon(), primaryNormal));
 
@@ -175,7 +179,13 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     }
     @OnClick(R.id.iv_capture_video)
     public void onClickCapture(){
-        CaptureHelper.fireScreenCaptureIntent(this);
+        if (!startedCapturing) {
+            CaptureHelper.fireScreenCaptureIntent(this);
+            startedCapturing = true;
+        }
+        else
+            BusStation.getBus().post(new CaptureMessage("stop"));
+
     }
     private void requestCameraPermission() {
         Log.w(TAG, "Camera permission is not granted. Requesting permission");
