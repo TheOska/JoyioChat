@@ -90,7 +90,7 @@ final class RecordingSession {
 
   private final File outputRoot;
   private final DateFormat fileFormat =
-      new SimpleDateFormat("'Secrush 'yyyy-MM-dd-HH-mm-ss'.mp4'", Locale.US);
+      new SimpleDateFormat("'JoyioChat 'yyyy-MM-dd-HH-mm-ss'.mp4'", Locale.US);
 
   private final NotificationManager notificationManager;
   private final WindowManager windowManager;
@@ -119,7 +119,7 @@ final class RecordingSession {
     if(this.activity == null)
       Log.d("oska", "activity is null");
     File picturesDir = Environment.getExternalStoragePublicDirectory(DIRECTORY_MOVIES);
-    outputRoot = new File(picturesDir, "Secrush");
+    outputRoot = new File(picturesDir, "JoyioChat");
 //    BusStation.getBus().register(this);
 
     notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
@@ -273,7 +273,6 @@ final class RecordingSession {
           throw e; // Only allow listener exceptions to propagate if stopped successfully.
         }
       }
-//      BusStation.getBus().unregister(this);
 
     }
 
@@ -292,7 +291,9 @@ final class RecordingSession {
             mainThread.post(new Runnable() {
               @Override
               public void run() {
-                showNotification(uri, null);
+                // close notification
+
+//                showNotification(uri, null);
               }
             });
           }

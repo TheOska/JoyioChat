@@ -33,5 +33,6 @@
     <color name="gray_pressed">#ff616161</color>
     <color name="primary_normal">#ff455a64</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#ff9800</color>
 
 </resources>

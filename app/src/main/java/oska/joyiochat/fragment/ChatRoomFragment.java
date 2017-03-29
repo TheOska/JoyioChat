@@ -21,6 +21,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import oska.joyiochat.R;
+import oska.joyiochat.activity.ChatRoomDetailActivity;
 import oska.joyiochat.activity.FaceTrackerActivity;
 import oska.joyiochat.activity.TestRajawaliActivity;
 import oska.joyiochat.adapter.ChatContactAdapter;
@@ -120,8 +121,8 @@ public class ChatRoomFragment extends Fragment implements
     @Override
     public void onImageClick(View v, int position) {
         Snackbar.make(v, "Clicked!" + favPeopleItemArrayList.get(position).getFavName(), Snackbar.LENGTH_SHORT).show();
-        getContext().startActivity(new Intent(getActivity(),FaceTrackerActivity.class));
-
+//        getContext().startActivity(new Intent(getActivity(),FaceTrackerActivity.class));
+        getContext().startActivity(new Intent(getActivity(),ChatRoomDetailActivity.class));
     }
 
     @Override

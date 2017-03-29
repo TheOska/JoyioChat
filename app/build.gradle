@@ -30,35 +30,37 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-
-    //event bus
+    compile 'com.android.support:design:25.2.0'
     compile 'com.squareup:otto:1.3.8'
-    // google
-    //permission
     compile 'com.karumi:dexter:2.3.1'
-    // loading animation lib
     compile 'com.github.ybq:Android-SpinKit:1.1.0'
-    // others
     compile 'com.jakewharton:butterknife:8.5.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     compile 'com.jakewharton.timber:timber:4.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    //circler iamge view
     compile 'de.hdodenhof:circleimageview:2.0.0'
-    //Rajawali
     compile 'org.rajawali3d:rajawali:1.1.777@aar'
-    //mobile vision
     compile 'com.googlecode.mp4parser:isoparser:1.1.21'
     compile 'com.google.dagger:dagger:2.8'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.8'
     compile 'com.android.support:support-v13:25.2.0'
     compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.android.support:support-v4:25.2.0'
     compile 'com.android.support:design:25.2.0'
     compile 'com.android.support:palette-v7:25.2.0'
     compile 'com.android.support:cardview-v7:25.2.0'
-    compile 'com.android.support:design:25.2.0'
     compile 'com.android.support:support-annotations:25.2.0'
     compile 'com.google.android.gms:play-services:10.2.0'
+    compile 'com.google.firebase:firebase-storage:10.2.0'
+    compile 'com.google.firebase:firebase-database:10.2.0'
+    compile 'com.google.firebase:firebase-auth:10.2.0'
+    compile 'com.firebaseui:firebase-ui-database:0.4.0'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.github.pedrovgs:renderers:3.2.0'
+    compile 'com.karumi:dexter:4.0.0'
+
+    testCompile 'junit:junit:4.12'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.8'
 }
+
+
+apply plugin: 'com.google.gms.google-services'

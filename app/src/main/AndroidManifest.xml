@@ -44,13 +44,15 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            </intent-filter>R
         </activity>
 
         <service android:name=".recording.TelecineService"/>
 
         <receiver android:name=".recording.DeleteRecordingBroadcastReceiver"/>
 
+        <activity android:name=".activity.ChatRoomDetailActivity"/>
+        <activity android:name=".activity.SignInActivity"/>
     </application>
 
 

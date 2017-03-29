@@ -69,7 +69,10 @@ import oska.joyiochat.R;
 import oska.joyiochat.eventbus.BusStation;
 import oska.joyiochat.eventbus.CaptureMessage;
 import oska.joyiochat.face.tracker.GraphicFaceTracker;
+import oska.joyiochat.listener.VideoCaptureListener;
 import oska.joyiochat.permission.FaceTrackingMultiplePermissionListener;
+import oska.joyiochat.permission.PermissionErrorListener;
+import oska.joyiochat.permission.PermissionHelper;
 import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.recording.CaptureHelper;
 import oska.joyiochat.recording.LetterRecordActivity;
@@ -84,7 +87,7 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
  */
-public final class FaceTrackerActivity extends AppCompatActivity {
+public final class FaceTrackerActivity extends AppCompatActivity implements VideoCaptureListener {
     private static final String TAG = "FaceTracker";
     int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
     @BindView(R.id.topLayout) LinearLayout llRoot;
@@ -118,11 +121,19 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.activity_face_detection);
-        Dexter.initialize(this);
+//        Dexter.initialize(this);
         ButterKnife.bind(this);
+        checkPermission();
         init3DModelSetting();
         initScreenRecording();
 
+
+    }
+    private void checkPermission() {
+        PermissionHelper ph = new PermissionHelper();
+        MultiplePermissionsListener mpl = ph.factoryMultiPermissionListener(llRoot);
+        PermissionErrorListener pel = new PermissionErrorListener();
+        ph.checkAll(this,mpl, pel);
 
     }
 
@@ -385,11 +396,11 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                                 .withOpenSettingsButton(R.string.permission_rationale_settings_button_text)
                                 .build());
 
-        if (Dexter.isRequestOngoing()) {
-            return;
-        }
-        Dexter.checkPermissions(allPermissionsListener, Manifest.permission.SYSTEM_ALERT_WINDOW,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.WRITE_SETTINGS);
+//        if (Dexter.isRequestOngoing()) {
+//            return;
+//        }
+//        Dexter.checkPermissions(allPermissionsListener, Manifest.permission.SYSTEM_ALERT_WINDOW,
+//                Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.WRITE_SETTINGS);
     }
 
     @NonNull
@@ -420,5 +431,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onStopVideoCapture(String fileName) {
 
+    }
 }

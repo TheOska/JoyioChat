@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "387157188595",
+    "firebase_url": "https://joyiochat.firebaseio.com",
+    "project_id": "joyiochat",
+    "storage_bucket": "joyiochat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387157188595:android:0f7eddfc2cec3794",
+        "android_client_info": {
+          "package_name": "oska.joyiochat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "387157188595-6kgo755jguaa03i7tssg239c7s5r0jtj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "oska.joyiochat",
+            "certificate_hash": "7d7ceec79186723c1201f0a87ccb2d5b92b92d34"
+          }
+        },
+        {
+          "client_id": "387157188595-6sil1rl4jgnu59qp3a3dvfet7chb1jej.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2vUs2JVxvHNlhjfmuiLAN4DP1U41VJSM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "387157188595-6sil1rl4jgnu59qp3a3dvfet7chb1jej.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

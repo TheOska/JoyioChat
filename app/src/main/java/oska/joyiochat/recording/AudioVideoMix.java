@@ -34,7 +34,7 @@ public class AudioVideoMix {
     private final String TAG = "AudioVideoMix";
     private String rawPath;
     private static final String LOCAL_DIR_MOV = (Environment.getExternalStoragePublicDirectory(DIRECTORY_MOVIES)) + "";
-    private static final String LOCAL_FOLDER = "/Secrush/";
+    private static final String LOCAL_FOLDER = "/JoyioChat/";
     String fadedAcc = "faded.aac";
     String screenShot1 = "screen1.mp4";
 

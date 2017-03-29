@@ -42,6 +42,8 @@ import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 import butterknife.OnItemSelected;
 import oska.joyiochat.R;
+import oska.joyiochat.permission.PermissionErrorListener;
+import oska.joyiochat.permission.PermissionHelper;
 import oska.joyiochat.permission.TempMultiplePermissionListener;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
@@ -114,15 +116,9 @@ public final class LetterRecordActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_recording);
         ButterKnife.bind(this);
-        Dexter.initialize(this);
         createPermissionListeners();
         initViews();
-        Log.d("oska", "video size preference " + videoSizePreference.get());
-        Log.d("oska", "showCountdownPreference preference " + showCountdownPreference.get());
-        Log.d("oska", "hideFromRecentsPreference preference " + hideFromRecentsPreference.get());
-        Log.d("oska", "recordingNotificationPreference preference " + recordingNotificationPreference.get());
-        Log.d("oska", "showTouchesPreference preference " + showTouchesPreference.get());
-
+        checkPermission();
         setTaskDescription(new TaskDescription(appName, rasterizeTaskIcon(), primaryNormal));
 
         videoSizePercentageAdapter = new VideoSizePercentageAdapter(this);
@@ -177,7 +173,13 @@ public final class LetterRecordActivity extends AppCompatActivity {
         mWaveDrawable.setColor(getResources().getColor(R.color.colorAccent));
 
     }
+    private void checkPermission() {
+        PermissionHelper ph = new PermissionHelper();
+        MultiplePermissionsListener mpl = ph.factoryMultiPermissionListener(rootView);
+        PermissionErrorListener pel = new PermissionErrorListener();
+        ph.checkAll(this,mpl, pel);
 
+    }
     private void createPermissionListeners() {
 
         MultiplePermissionsListener feedbackViewMultiplePermissionListener =
@@ -189,11 +191,6 @@ public final class LetterRecordActivity extends AppCompatActivity {
                                 .withOpenSettingsButton(R.string.permission_rationale_settings_button_text)
                                 .build());
 
-        if (Dexter.isRequestOngoing()) {
-            return;
-        }
-        Dexter.checkPermissions(allPermissionsListener, Manifest.permission.SYSTEM_ALERT_WINDOW,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.WRITE_SETTINGS);
     }
 
     @TargetApi(Build.VERSION_CODES.M)

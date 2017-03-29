@@ -37,6 +37,7 @@
     <string name="color">color</string>
     <string name="dialog_music">Select Music</string>
     <string name="confirm">Confirm</string>
+    <string name="sign_in">Sign In</string>
 
     <array name="countdown">
         <item>@string/countdown_three</item>

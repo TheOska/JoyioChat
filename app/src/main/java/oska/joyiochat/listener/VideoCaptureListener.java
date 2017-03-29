@@ -5,5 +5,5 @@ package oska.joyiochat.listener;
  */
 
 public interface VideoCaptureListener {
-    void onstopVideoCapture();
+    void onStopVideoCapture(String fileName);
 }
