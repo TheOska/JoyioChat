@@ -67,6 +67,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import oska.joyiochat.R;
+import oska.joyiochat.listener.VideoThumbnailListener;
 import oska.joyiochat.module.JoyioChatMessage;
 import oska.joyiochat.permission.PermissionErrorListener;
 import oska.joyiochat.permission.PermissionHelper;
@@ -79,7 +80,7 @@ import static android.os.Environment.DIRECTORY_PICTURES;
  */
 
 public class ChatRoomDetailActivity extends AppCompatActivity implements
-        GoogleApiClient.OnConnectionFailedListener{
+        GoogleApiClient.OnConnectionFailedListener, VideoThumbnailListener{
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         public TextView messageTextView;
@@ -328,31 +329,9 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
             if (resultCode == RESULT_OK) {
                 if (data != null) {
                     final Uri uri = data.getData();
+                    Uri videoThumbnailUri = saveThumbnailBitmap("temp", uri);
+                    this.onVideoThumbnailComplete(uri,videoThumbnailUri);
 
-                    // Case that browser data from local
-                    JoyioChatMessage tempMessage = new JoyioChatMessage(null, mUsername, mPhotoUrl,
-                            LOADING_IMAGE_URL);
-                    mFirebaseDatabaseReference.child(MESSAGES_CHILD).push()
-                            .setValue(tempMessage, new DatabaseReference.CompletionListener() {
-                                @Override
-                                public void onComplete(DatabaseError databaseError,
-                                                       DatabaseReference databaseReference) {
-                                    if (databaseError == null) {
-                                        String key = databaseReference.getKey();
-                                        StorageReference storageReference =
-                                                FirebaseStorage.getInstance()
-                                                        .getReference(mFirebaseUser.getUid())
-                                                        .child(key)
-                                                        .child(uri.getLastPathSegment());
-
-//                                        putImageInStorage(storageReference, uri, key);
-                                        putVideoInStorage(storageReference, uri, key);
-                                    } else {
-                                        Log.w(TAG, "Unable to write message to database.",
-                                                databaseError.toException());
-                                    }
-                                }
-                            });
                 }
             }
         } else if (requestCode == REQUEST_INVITE) {
@@ -398,20 +377,22 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                 });
     }
 
-    private void putVideoInStorage(StorageReference storageReference, Uri uri, final String key) {
-        saveThumbnailBitmap("temp", uri);
-        storageReference.putFile(uri).addOnCompleteListener(ChatRoomDetailActivity.this,
+    private void putVideoInStorage(final DatabaseReference databaseReference, final StorageReference storageReference, Uri videoUri, final Uri videoThumbnailUri, final String key) {
+        final JoyioChatMessage joyioChatMessage = new JoyioChatMessage();
+        storageReference.putFile(videoUri).addOnCompleteListener(ChatRoomDetailActivity.this,
                 new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        @SuppressWarnings("VisibleForTests") Uri downloadUrl =  task.getResult().getMetadata().getDownloadUrl();
                         if (task.isSuccessful()) {
-                            @SuppressWarnings("VisibleForTests")
-                            JoyioChatMessage joyioChatMessage =
-                                    new JoyioChatMessage(null, mUsername, mPhotoUrl,
-                                            task.getResult().getMetadata().getDownloadUrl()
-                                                    .toString());
-                            mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
-                                    .setValue(joyioChatMessage);
+                            joyioChatMessage.setText(null);
+                            joyioChatMessage.setName(mUsername);
+                            joyioChatMessage.setPhotoUrl(mPhotoUrl);
+                            joyioChatMessage.setVideoUrl(downloadUrl.toString());
+                            joyioChatMessage.setImageUrl(null);
+                            uploadVideoThumbnail(databaseReference,videoThumbnailUri, storageReference, joyioChatMessage , key);
+//                            mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
+//                                    .setValue(joyioChatMessage);
                         } else {
                             Log.w(TAG, "Image upload task was not successful.",
                                     task.getException());
@@ -420,17 +401,39 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                 });
     }
 
-    private void saveThumbnailBitmap(String filename, Uri uri) {
+    private void uploadVideoThumbnail(DatabaseReference dbRef, Uri videoThumbnailUri , StorageReference storageReference2storageReference, final JoyioChatMessage joyioChatMessage, final String key) {
+        StorageReference storageThumbnailRef =
+                FirebaseStorage.getInstance()
+                        .getReference(mFirebaseUser.getUid())
+                        .child(key)
+                        .child(videoThumbnailUri.getLastPathSegment());
 
-        String fileFullPath =getRealPathFromURI_API19(uri);
+        storageThumbnailRef.putFile(videoThumbnailUri).addOnCompleteListener(ChatRoomDetailActivity.this,
+                new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        if (task.isSuccessful()) {
+
+                            @SuppressWarnings("VisibleForTests") Uri thumbnailUrl = task.getResult().getMetadata().getDownloadUrl();
+                            joyioChatMessage.setVideoThumbnailUrl(thumbnailUrl.toString());
+                            mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
+                                    .setValue(joyioChatMessage);
+                        }else
+                            Log.w(TAG, "thumbnail image upload task was not successful.", task.getException());
+                    }
+                });
+
+    }
+
+    private Uri saveThumbnailBitmap(String filename, Uri uri) {
+
+        // video URI
+        String fileFullPath = getRealPathFromURI_API19(uri);
         Bitmap videoThumbnailBitmap = ThumbnailUtils.createVideoThumbnail(fileFullPath,
                 MediaStore.Images.Thumbnails.MINI_KIND);
-        if(videoThumbnailBitmap == null)
-            Log.d("oska", "videoThumbnailBitmap is null");
-        else
-            Log.d("oska", "videoThumbnailBitmap is not null");
 
-//        String nameFile =fileFullPath.substring(fileFullPath.lastIndexOf("/")+1);
+
+        // video thumbnail path
         String extStorageDirectory = LOCAL_DIR_PIC + LOCAL_FOLDER;
         OutputStream outStream = null;
 
@@ -444,9 +447,11 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
             videoThumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
             out.flush();
             out.close();
+            return Uri.fromFile(file);
 
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
     }
     public String getRealPathFromURI_API19(Uri uri){
@@ -480,5 +485,29 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
     }
 
-
+    @Override
+    public void onVideoThumbnailComplete(final Uri videoUri,final Uri thumbnailUri) {
+        // Case that browser data from local
+        JoyioChatMessage tempMessage = new JoyioChatMessage(null, mUsername, mPhotoUrl,
+                LOADING_IMAGE_URL);
+        mFirebaseDatabaseReference.child(MESSAGES_CHILD).push()
+                .setValue(tempMessage, new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError databaseError,
+                                           DatabaseReference databaseReference) {
+                        if (databaseError == null) {
+                            String key = databaseReference.getKey();
+                            StorageReference storageReference =
+                                    FirebaseStorage.getInstance()
+                                            .getReference(mFirebaseUser.getUid())
+                                            .child(key)
+                                            .child(videoUri.getLastPathSegment());
+                            putVideoInStorage(databaseReference,storageReference, videoUri,thumbnailUri, key);
+                        } else {
+                            Log.w(TAG, "Unable to write message to database.",
+                                    databaseError.toException());
+                        }
+                    }
+                });
+    }
 }
