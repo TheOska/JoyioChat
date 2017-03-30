@@ -33,7 +33,7 @@ public class JoyioChatMessage {
         this.videoThumbnailUrl = videoThumbnailUrl;
     }
 
-    public String getVideoThumbnail() {
+    public String getVideoThumbnailUrl() {
         return videoThumbnailUrl;
     }
 

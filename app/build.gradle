@@ -56,6 +56,7 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.github.pedrovgs:renderers:3.2.0'
     compile 'com.karumi:dexter:4.0.0'
+    compile 'com.afollestad.material-dialogs:commons:0.9.2.3'
 
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
@@ -64,3 +65,4 @@ dependencies {
 
 
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'realm-android'

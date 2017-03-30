@@ -6,45 +6,70 @@
               android:layout_marginBottom="10dp">
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/messengerImageView"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:src="@drawable/ic_account_circle_black_36dp"/>
+            android:src="@drawable/ic_account_circle_black_36dp" />
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
             android:gravity="center_vertical"
-            android:layout_marginLeft="10dp">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/messageTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
-                android:textAppearance="?android:attr/textAppearanceLarge"/>
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:visibility="gone" />
 
             <ImageView
                 android:id="@+id/messageImageView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
                 android:adjustViewBounds="true"
-                android:background="@color/colorPrimary"
-                android:scaleType="fitCenter"/>
+                android:background="@color/style_color_primary_dark"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <RelativeLayout
+                android:id="@+id/rl_video_container"
+                android:visibility="gone"
+                android:layout_width="250dp"
+                android:layout_height="250dp">
+
+                <ImageView
+                    android:id="@+id/iv_video_thumbnail"
+                    android:src="@drawable/ic_play_arrow_black_24dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/cardview_dark_background"
+                    android:scaleType="centerCrop" />
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:background="#FFF"
+                    android:src="@drawable/ic_play_arrow_black_24dp" />
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/messengerTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
-                android:textAppearance="?android:attr/textAppearanceSmall"/>
+                android:textAppearance="?android:attr/textAppearanceSmall" />
         </LinearLayout>
 
     </LinearLayout>

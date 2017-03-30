@@ -47,7 +47,7 @@ public class FavPeopleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             View view = LayoutInflater.from(context).inflate(R.layout.row_fav_people, parent, false);
 
             FavViewHolder favViewHolder = new FavViewHolder(view);
-            setupClickableViews(view, favViewHolder);
+                setupClickableViews(view, favViewHolder);
             return favViewHolder;
         }
         return null;

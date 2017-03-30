@@ -38,10 +38,20 @@
     <string name="dialog_music">Select Music</string>
     <string name="confirm">Confirm</string>
     <string name="sign_in">Sign In</string>
+    <string name="choose_platform">Choose One Platfrom</string>
+    <string name="joyiochat_camera">JoyioChat Camera</string>
+    <string name="image_gallery">From Image Gallery</string>
+    <string name="video_gallery">From Video Gallery</string>
 
     <array name="countdown">
         <item>@string/countdown_three</item>
         <item>@string/countdown_two</item>
         <item>@string/countdown_one</item>
+    </array>
+    <array name="platform_array">
+        <item>@string/joyiochat_camera</item>
+        <item>@string/image_gallery</item>
+        <item>@string/video_gallery</item>
+
     </array>
 </resources>

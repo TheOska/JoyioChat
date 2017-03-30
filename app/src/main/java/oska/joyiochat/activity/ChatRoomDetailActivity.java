@@ -30,7 +30,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.ads.AdView;
@@ -67,6 +69,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import oska.joyiochat.R;
+import oska.joyiochat.adapter.JoyioChatAdapter;
 import oska.joyiochat.listener.VideoThumbnailListener;
 import oska.joyiochat.module.JoyioChatMessage;
 import oska.joyiochat.permission.PermissionErrorListener;
@@ -82,26 +85,14 @@ import static android.os.Environment.DIRECTORY_PICTURES;
 public class ChatRoomDetailActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener, VideoThumbnailListener{
 
-    public static class MessageViewHolder extends RecyclerView.ViewHolder {
-        public TextView messageTextView;
-        public ImageView messageImageView;
-        public TextView messengerTextView;
-        public CircleImageView messengerImageView;
-
-        public MessageViewHolder(View v) {
-            super(v);
-            messageTextView = (TextView) itemView.findViewById(R.id.messageTextView);
-            messageImageView = (ImageView) itemView.findViewById(R.id.messageImageView);
-            messengerTextView = (TextView) itemView.findViewById(R.id.messengerTextView);
-            messengerImageView = (CircleImageView) itemView.findViewById(R.id.messengerImageView);
-        }
-    }
-
-
     private static final String TAG = "MainActivity";
     public static final String MESSAGES_CHILD = "messages";
     private static final int REQUEST_INVITE = 1;
-    private static final int REQUEST_IMAGE = 2;
+    private static final int REQUEST_MEDIA = 2;
+    private int selectedType;
+    private static final int EXTRA_IMAGE = 3;
+    private static final int EXTRA_VIDEO = 4;
+
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 10;
     public static final String ANONYMOUS = "anonymous";
     private static final String MESSAGE_SENT_EVENT = "message_sent";
@@ -116,15 +107,14 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     private Button mSendButton;
     private RecyclerView mMessageRecyclerView;
     private LinearLayoutManager mLinearLayoutManager;
-    private FirebaseRecyclerAdapter<JoyioChatMessage, MessageViewHolder> mFirebaseAdapter;
+//    private FirebaseRecyclerAdapter<JoyioChatMessage, MessageViewHolder> mFirebaseAdapter;
+    private JoyioChatAdapter joyioChatAdapter;
     private ProgressBar mProgressBar;
     private DatabaseReference mFirebaseDatabaseReference;
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
-//    private FirebaseAnalytics mFirebaseAnalytics;
     private EditText mMessageEditText;
     private ImageView mAddMessageImageView;
-//    private AdView mAdView;
 //    private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private GoogleApiClient mGoogleApiClient;
     private RelativeLayout relativeLayout;
@@ -182,81 +172,12 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         mLinearLayoutManager.setStackFromEnd(true);
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-
-        // READ MESSAGE
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<JoyioChatMessage, MessageViewHolder>(
-                JoyioChatMessage.class,
-                R.layout.item_message,
-                MessageViewHolder.class,
-                mFirebaseDatabaseReference.child(MESSAGES_CHILD)) {
-
-            @Override
-            protected JoyioChatMessage parseSnapshot(DataSnapshot snapshot) {
-                JoyioChatMessage friendlyMessage = super.parseSnapshot(snapshot);
-                if (friendlyMessage != null) {
-                    friendlyMessage.setId(snapshot.getKey());
-                }
-                return friendlyMessage;
-            }
-
-            @Override
-            protected void populateViewHolder(final MessageViewHolder viewHolder,
-                                              JoyioChatMessage joyioChatMessage, int position) {
-                mProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                if (joyioChatMessage.getText() != null) {
-                    viewHolder.messageTextView.setText(joyioChatMessage.getText());
-                    viewHolder.messageTextView.setVisibility(TextView.VISIBLE);
-                    viewHolder.messageImageView.setVisibility(ImageView.GONE);
-                } else {
-                    String imageUrl = joyioChatMessage.getImageUrl();
-                    if (imageUrl.startsWith("gs://")) {
-                        StorageReference storageReference = FirebaseStorage.getInstance()
-                                .getReferenceFromUrl(imageUrl);
-                        storageReference.getDownloadUrl().addOnCompleteListener(
-                                new OnCompleteListener<Uri>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Uri> task) {
-                                        if (task.isSuccessful()) {
-                                            String downloadUrl = task.getResult().toString();
-
-                                            Glide.with(viewHolder.messageImageView.getContext())
-                                                    .load(downloadUrl)
-                                                    .into(viewHolder.messageImageView);
-                                        } else {
-                                            Log.w(TAG, "Getting download url was not successful.",
-                                                    task.getException());
-                                        }
-                                    }
-                                });
-                    } else {
-                        Glide.with(viewHolder.messageImageView.getContext())
-                                .load(joyioChatMessage.getImageUrl())
-                                .into(viewHolder.messageImageView);
-                    }
-                    viewHolder.messageImageView.setVisibility(ImageView.VISIBLE);
-                    viewHolder.messageTextView.setVisibility(TextView.GONE);
-                }
-
-
-                // SET username on screen conand i
-                viewHolder.messengerTextView.setText(joyioChatMessage.getName());
-                if (joyioChatMessage.getPhotoUrl() == null) {
-                    viewHolder.messengerImageView.setImageDrawable(ContextCompat.getDrawable(ChatRoomDetailActivity.this,
-                            R.drawable.ic_account_circle_black_36dp));
-                } else {
-                    Glide.with(ChatRoomDetailActivity.this)
-                            .load(joyioChatMessage.getPhotoUrl())
-                            .into(viewHolder.messengerImageView);
-                }
-
-            }
-        };
-
-        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+        joyioChatAdapter = new JoyioChatAdapter(mFirebaseDatabaseReference.child(MESSAGES_CHILD), this, mProgressBar);
+        joyioChatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
-                int friendlyMessageCount = mFirebaseAdapter.getItemCount();
+                int friendlyMessageCount = joyioChatAdapter.getItemCount();
                 int lastVisiblePosition = mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
                 // If the recycler view is initially being loaded or the user is at the bottom of the list, scroll
                 // to the bottom of the list to show the newly added message.
@@ -268,7 +189,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         });
 
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mMessageRecyclerView.setAdapter(mFirebaseAdapter);
+        mMessageRecyclerView.setAdapter(joyioChatAdapter);
 
     }
 
@@ -300,10 +221,47 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         mAddMessageImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("video/*");
-                startActivityForResult(intent, REQUEST_IMAGE);
+
+                new MaterialDialog.Builder(ChatRoomDetailActivity.this)
+                        .title(R.string.choose_platform)
+                        .items(R.array.platform_array)
+                        .itemsCallback(new MaterialDialog.ListCallback() {
+                            @Override
+                            public void onSelection(MaterialDialog dialog, View itemView, int position, CharSequence text) {
+                                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                                intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+                                switch (position){
+                                    case 0:
+                                        startActivity(new Intent(ChatRoomDetailActivity.this,FaceTrackerActivity.class));
+                                        break;
+                                    case 1:
+                                        intent.setType("image/*");
+                                        selectedType = EXTRA_IMAGE;
+                                        startActivityForResult(intent, REQUEST_MEDIA);
+
+                                        break;
+                                    case 2:
+                                        intent.setType("video/*");
+                                        selectedType = EXTRA_VIDEO;
+                                        startActivityForResult(intent, REQUEST_MEDIA);
+
+
+                                        break;
+                                    default:
+                                        intent.setType("video/*");
+                                        selectedType = EXTRA_VIDEO;
+                                        startActivityForResult(intent, REQUEST_MEDIA);
+
+
+                                        break;
+                                }
+
+                            }
+                        })
+                        .show();
+
+
             }
         });
 
@@ -325,12 +283,43 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_IMAGE) {
+        if (requestCode == REQUEST_MEDIA) {
             if (resultCode == RESULT_OK) {
                 if (data != null) {
+                    Log.d("selected" , selectedType +"");
                     final Uri uri = data.getData();
-                    Uri videoThumbnailUri = saveThumbnailBitmap("temp", uri);
-                    this.onVideoThumbnailComplete(uri,videoThumbnailUri);
+                    if(selectedType == EXTRA_VIDEO) {
+                        Uri videoThumbnailUri = saveThumbnailBitmap("temp", uri);
+                        this.onVideoThumbnailComplete(uri, videoThumbnailUri);
+
+                    }else if(selectedType == EXTRA_IMAGE){
+
+
+                        JoyioChatMessage tempMessage = new JoyioChatMessage(null, mUsername, mPhotoUrl,
+                                LOADING_IMAGE_URL);
+                        mFirebaseDatabaseReference.child(MESSAGES_CHILD).push()
+                                .setValue(tempMessage, new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError,
+                                                           DatabaseReference databaseReference) {
+                                        if (databaseError == null) {
+                                            String key = databaseReference.getKey();
+                                            StorageReference storageReference =
+                                                    FirebaseStorage.getInstance()
+                                                            .getReference(mFirebaseUser.getUid())
+                                                            .child(key)
+                                                            .child(uri.getLastPathSegment());
+                                            putImageInStorage(storageReference,uri, key);
+
+                                        } else {
+                                            Log.w(TAG, "Unable to write message to database.",
+                                                    databaseError.toException());
+                                        }
+                                    }
+                                });
+                    }else{
+                        Toast.makeText(this,"Something When Wrong", Toast.LENGTH_SHORT).show();
+                    }
 
                 }
             }
