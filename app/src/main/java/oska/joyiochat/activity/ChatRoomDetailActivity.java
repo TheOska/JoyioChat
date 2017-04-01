@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
+import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.appinvite.AppInviteInvitation;
@@ -53,6 +54,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.firebase.storage.FirebaseStorage;
@@ -68,8 +71,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import oska.joyiochat.R;
 import oska.joyiochat.adapter.JoyioChatAdapter;
+import oska.joyiochat.database.VideoModel;
 import oska.joyiochat.listener.VideoThumbnailListener;
 import oska.joyiochat.module.JoyioChatMessage;
 import oska.joyiochat.permission.PermissionErrorListener;
@@ -118,6 +124,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
 //    private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private GoogleApiClient mGoogleApiClient;
     private RelativeLayout relativeLayout;
+    private Realm realm;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,7 +135,6 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         checkPermission();
         getUserInfo();
         initChatRoomMsg();
-//        initRemoteConfig();
         initSendMsg();
     }
 
@@ -165,6 +172,11 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     }
 
     private void initChatRoomMsg() {
+        Realm.init(this);
+        RealmConfiguration config = new RealmConfiguration.Builder()
+                                        .build();
+        realm = Realm.getInstance(config);
+
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mMessageRecyclerView = (RecyclerView) findViewById(R.id.messageRecyclerView);
@@ -172,7 +184,9 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         mLinearLayoutManager.setStackFromEnd(true);
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        joyioChatAdapter = new JoyioChatAdapter(mFirebaseDatabaseReference.child(MESSAGES_CHILD), this, mProgressBar);
+        Query query = mFirebaseDatabaseReference.child(MESSAGES_CHILD);
+        updateRealm(query);
+        joyioChatAdapter = new JoyioChatAdapter( mFirebaseDatabaseReference.child(MESSAGES_CHILD), this, mProgressBar, realm);
         joyioChatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
@@ -191,6 +205,29 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
         mMessageRecyclerView.setAdapter(joyioChatAdapter);
 
+
+    }
+
+    private void updateRealm(Query query) {
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for (DataSnapshot issue : dataSnapshot.getChildren()) {
+                        if(issue.hasChild("videoUrl")){
+                            VideoModel videoModel = realm.where(VideoModel.class).equalTo("videoUrl", issue.child("videoUrl").getValue().toString()).findFirst();
+                            if(videoModel == null) // don't have this record, than insert
+                                insertToDB(issue.child("videoUrl").getValue().toString());
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
@@ -374,12 +411,14 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                         @SuppressWarnings("VisibleForTests") Uri downloadUrl =  task.getResult().getMetadata().getDownloadUrl();
                         if (task.isSuccessful()) {
+
+
                             joyioChatMessage.setText(null);
                             joyioChatMessage.setName(mUsername);
                             joyioChatMessage.setPhotoUrl(mPhotoUrl);
                             joyioChatMessage.setVideoUrl(downloadUrl.toString());
                             joyioChatMessage.setImageUrl(null);
-                            uploadVideoThumbnail(databaseReference,videoThumbnailUri, storageReference, joyioChatMessage , key);
+                            uploadVideoThumbnail(videoThumbnailUri, joyioChatMessage , key, downloadUrl.toString());
 //                            mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
 //                                    .setValue(joyioChatMessage);
                         } else {
@@ -390,7 +429,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                 });
     }
 
-    private void uploadVideoThumbnail(DatabaseReference dbRef, Uri videoThumbnailUri , StorageReference storageReference2storageReference, final JoyioChatMessage joyioChatMessage, final String key) {
+    private void uploadVideoThumbnail(Uri videoThumbnailUri, final JoyioChatMessage joyioChatMessage, final String key, final String strDownloadUrl) {
         StorageReference storageThumbnailRef =
                 FirebaseStorage.getInstance()
                         .getReference(mFirebaseUser.getUid())
@@ -407,10 +446,30 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                             joyioChatMessage.setVideoThumbnailUrl(thumbnailUrl.toString());
                             mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
                                     .setValue(joyioChatMessage);
+//                            insertToDB(strDownloadUrl);
                         }else
                             Log.w(TAG, "thumbnail image upload task was not successful.", task.getException());
                     }
                 });
+
+    }
+
+    private void insertToDB(final String strDownloadUrl) {
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                Number currentIdNum = realm.where(VideoModel.class).max(VideoModel.TAG_ID);
+                int maxID;
+                if(currentIdNum != null){
+                    maxID = currentIdNum.intValue()+1;
+                }else
+                    maxID = 1;
+                VideoModel videoModel = new VideoModel();
+                videoModel.setId(maxID);
+                videoModel.setVideoUrl(strDownloadUrl);
+                realm.insertOrUpdate(videoModel);
+            }
+        });
 
     }
 
@@ -485,6 +544,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                     public void onComplete(DatabaseError databaseError,
                                            DatabaseReference databaseReference) {
                         if (databaseError == null) {
+
                             String key = databaseReference.getKey();
                             StorageReference storageReference =
                                     FirebaseStorage.getInstance()

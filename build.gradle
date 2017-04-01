@@ -16,10 +16,8 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
-        maven {
-//            url "https://oss.sonatype.org/content/repositories/snapshots/"
-            url "https://jitpack.io"
-        }
+        maven { url "https://jitpack.io" }
+        maven { url 'https://github.com/linchaolong/stetho-realm/raw/master/maven-repo'}
     }
 }
 

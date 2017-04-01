@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.realm.Realm;
 import oska.joyiochat.R;
 import oska.joyiochat.activity.ChatRoomDetailActivity;
 import oska.joyiochat.module.JoyioChatMessage;
@@ -46,13 +47,15 @@ public class JoyioChatAdapter extends FirebaseRecyclerAdapter<JoyioChatMessage, 
     private ProgressBar mProgressBar;
     private List<JoyioChatMessage> joyioChatMessages;
     int count = 0;
+    private Realm realm;
     private Query refQuery;
-    public JoyioChatAdapter(Query ref, Activity activity, ProgressBar mProgressBar) {
+    public JoyioChatAdapter(Query ref, Activity activity, ProgressBar mProgressBar, Realm realm) {
         super(JoyioChatMessage.class, R.layout.item_message, MessageViewHolder.class, ref);
         this.activity = activity;
         this.mProgressBar = mProgressBar;
         joyioChatMessages = new ArrayList<>();
         refQuery =ref;
+        this.realm = realm;
     }
 
     @Override
