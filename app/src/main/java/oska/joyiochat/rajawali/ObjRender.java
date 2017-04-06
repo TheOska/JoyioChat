@@ -1,6 +1,10 @@
 package oska.joyiochat.rajawali;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.SurfaceTexture;
+import android.media.MediaPlayer;
 import android.opengl.GLES20;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -18,10 +22,15 @@ import org.rajawali3d.loader.LoaderOBJ;
 import org.rajawali3d.loader.ParsingException;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.methods.DiffuseMethod;
+import org.rajawali3d.materials.methods.SpecularMethod;
 import org.rajawali3d.materials.textures.ATexture;
+import org.rajawali3d.materials.textures.NormalMapTexture;
+import org.rajawali3d.materials.textures.StreamingTexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.Matrix4;
 import org.rajawali3d.math.vector.Vector3;
+import org.rajawali3d.primitives.Cube;
+import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.util.GLU;
@@ -32,6 +41,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import oska.joyiochat.R;
 import oska.joyiochat.listener.FaceInfoDetectListener;
+import oska.joyiochat.listener.RenderListener;
 import oska.joyiochat.utils.RajawaliUtils;
 
 /**
@@ -62,18 +72,22 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     private Matrix4 mViewMatrix;
     private Matrix4 mProjectionMatrix;
     private ObjectColorPicker mPicker;
-    private boolean objRendered;
+    private MediaPlayer mMediaPlayer;
+    private StreamingTexture mVideoTexture;
+    private RenderListener renderListener;
     private final String TAG = "ObjRender";
+    private boolean renderCompleted;
+
     public ObjRender(Context context) {
         super(context);
         this.context = context;
-        setFrameRate(60);
+        setFrameRate(30);
+        this.renderListener = (RenderListener)context;
     }
 
     @Override
     public void initScene() {
-
-        objRendered =false;
+        renderCompleted = false;
         mViewport = new int[] { 0, 0, getViewportWidth(), getViewportHeight() };
         mNearPos4 = new double[4];
         mFarPos4 = new double[4];
@@ -91,6 +105,28 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mLight.setPosition(0, 0, 4);
         mLight.setPower(3);
 
+//        try {
+//            Material material = new Material();
+//            material.enableLighting(true);
+//            material.setDiffuseMethod(new DiffuseMethod.Lambert());
+//            material.setSpecularMethod(new SpecularMethod.Phong());
+//            mMediaPlayer = MediaPlayer.create(getContext(),
+//                    R.raw.sintel_trailer_480p);
+//            mMediaPlayer.setLooping(true);
+//            mVideoTexture = new StreamingTexture("sintelTrailer", mMediaPlayer);
+//        } catch (Resources.NotFoundException e) {
+//            e.printStackTrace();
+//        }
+
+//        Material material = new Material();
+//        material.setColorInfluence(0);
+//        try {
+//            material.addTexture(mVideoTexture);
+//        } catch (ATexture.TextureException e) {
+//            e.printStackTrace();
+//        }
+
+
         getCurrentScene().addLight(mLight);
         camera.setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS);
 
@@ -102,17 +138,51 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
             objParser.parse();
             mObjectGroup = objParser.getParsedObject();
             mObjectGroup.setScale(0.35f);
-
-//            mCameraAnim = new RotateOnAxisAnimation(Vector3.Axis.Y, 180);
-//            mCameraAnim.setDurationMilliseconds(8000);
-//            mCameraAnim.setRepeatMode(Animation.RepeatMode.INFINITE);
-//            mCameraAnim.setTransformable3D(mObjectGroup);
-
+//            mObjectGroup.setMaterial(material);
 
         } catch (ParsingException e) {
             e.printStackTrace();
         }
 
+
+        try {
+
+
+            Material material2 = new Material();
+            material2.setDiffuseMethod(new DiffuseMethod.Lambert());
+            material2.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
+            material2.enableLighting(true);
+            try {
+                material2.addTexture(new Texture("earthDiffuseTex", R.drawable.earth_diffuse));
+                material2.addTexture(new NormalMapTexture("eartNormalTex", R.drawable.earth_diffuse));
+            } catch (ATexture.TextureException e) {
+                e.printStackTrace();
+            }
+            material2.setColorInfluence(0);
+
+            Material roadMaterial = new Material();
+            roadMaterial.enableLighting(true);
+            roadMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
+            roadMaterial.addTexture(new Texture("roadTex", R.drawable.earth_diffuse));
+            roadMaterial.setColorInfluence(0);
+            mObjectGroup.getChildAt(1).setMaterial(material2);
+
+        } catch (ATexture.TextureException e) {
+            e.printStackTrace();
+        }
+
+//        Object3D mEarth = new Sphere(1, 32, 32);
+//        mEarth.setZ(-.5f);
+//        getCurrentScene().addChild(mEarth);
+
+
+
+        setupLighting();
+        renderListener.onRendered();
+//        mMediaPlayer.start();
+    }
+
+    private void setupLighting() {
         mLightAnim = new EllipticalOrbitAnimation3D(new Vector3(),
                 new Vector3(0, 10, 0), Vector3.getAxisVector(Vector3.Axis.Z), 0,
                 360, EllipticalOrbitAnimation3D.OrbitDirection.CLOCKWISE);
@@ -123,15 +193,8 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
 
         mObjectGroup.setDrawingMode(GLES20.GL_TRIANGLES);
         mPicker.registerObject(mObjectGroup);
-//        getCurrentScene().registerAnimation(mCameraAnim);
         getCurrentScene().registerAnimation(mLightAnim);
-
-
-//        mCameraAnim.play();
         mLightAnim.play();
-        Log.d(TAG, "init mObjectGroup RotX: " +mObjectGroup.getRotX());
-        Log.d(TAG, "init mObjectGroup RotY: " +mObjectGroup.getRotY());
-        Log.d(TAG, "init mObjectGroup RotZ: " +mObjectGroup.getRotZ());
 
     }
 
@@ -139,8 +202,14 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         getCurrentScene().removeChild(mObjectGroup);
     }
 
+    public void setRenderCompleted(){
+        renderCompleted = true;
+    }
     public void  startRendObj(){
-        getCurrentScene().addChild(mObjectGroup);
+        if(renderCompleted == true) {
+            Log.d("oska", "startRendObj");
+            getCurrentScene().addChild(mObjectGroup);
+        }
     }
 
     @Override
@@ -156,6 +225,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     @Override
     public void onRender(final long elapsedTime, final double deltaTime) {
         super.onRender(elapsedTime, deltaTime);
+//        mVideoTexture.update();
     }
 
     @Override
@@ -165,13 +235,32 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+//        if (mMediaPlayer != null)
+//            mMediaPlayer.pause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+//        if (mMediaPlayer != null)
+//            mMediaPlayer.start();
+    }
+
+    @Override
     public void onNoObjectPicked() {
 
     }
-
+    @Override
+    public void onRenderSurfaceDestroyed(SurfaceTexture surfaceTexture) {
+        super.onRenderSurfaceDestroyed(surfaceTexture);
+//        mMediaPlayer.stop();
+//        mMediaPlayer.release();
+    }
     public void onRenderSurfaceSizeChanged(GL10 gl, int width, int height) {
         super.onRenderSurfaceSizeChanged(gl, width, height);
-        Log.d(TAG,"onRenderSurfaceSizeChanged called"  );
+//        Log.d(TAG,"onRenderSurfaceSizeChanged called"  );
         mViewport[2] = getViewportWidth();
         mViewport[3] = getViewportHeight();
         mViewMatrix = camera.getViewMatrix();
@@ -189,7 +278,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     public void moveSelectedObject(float x, float y, float rotationY) {
         if (mObjectGroup == null)
             return;
-        Log.d("ObjRender","moveSelectedObject called");
+//        Log.d("ObjRender","moveSelectedObject called");
         //
         // -- unproject the screen coordinate (2D) to the camera's near plane
         //
@@ -229,9 +318,9 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
         mObjectGroup.setX(mNewObjPos.x);
         mObjectGroup.setY(mNewObjPos.y);
         mObjectGroup.setRotY(180+rotationY*1.5);
-        Log.d(TAG, "mObjectGroup RotX: " +mObjectGroup.getRotX());
-        Log.d(TAG, "mObjectGroup RotY: " +mObjectGroup.getRotY());
-        Log.d(TAG, "mObjectGroup RotZ: " +mObjectGroup.getRotZ());
+//        Log.d(TAG, "mObjectGroup RotX: " +mObjectGroup.getRotX());
+//        Log.d(TAG, "mObjectGroup RotY: " +mObjectGroup.getRotY());
+//        Log.d(TAG, "mObjectGroup RotZ: " +mObjectGroup.getRotZ());
 
     }
 
@@ -240,7 +329,7 @@ public class ObjRender extends Renderer implements OnObjectPickedListener {
     }
 
     public void zoomInOutObj(float z){
-        Log.d("zoomInOutObj", "z face index is " + z);
+//        Log.d("zoomInOutObj", "z face index is " + z);
         z = z/ 1.5f;
         camera.setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS - z);
     }

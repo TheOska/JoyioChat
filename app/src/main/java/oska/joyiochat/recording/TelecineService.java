@@ -20,6 +20,7 @@ import javax.inject.Provider;
 import oska.joyiochat.R;
 import oska.joyiochat.eventbus.BusStation;
 import oska.joyiochat.eventbus.CaptureMessage;
+import oska.joyiochat.eventbus.JoyioVideoMessage;
 
 import static android.app.Notification.PRIORITY_MIN;
 
@@ -116,6 +117,7 @@ public final class TelecineService extends Service {
     Log.d("oska","receive bus message");
     if(message.getMsg().toString().equals("stop")){
       recordingSession.stopRecording();
+      BusStation.getBus().post(new JoyioVideoMessage(recordingSession.getOutPutFileName()));
 
     }
   }  @Override

@@ -104,13 +104,15 @@ final class OverlayView extends FrameLayout {
     super(context);
     this.listener = listener;
     this.showCountDown = showCountDown;
+    listener.onStart();
 
-    inflate(context, R.layout.overlay_view, this);
-    ButterKnife.bind(this);
+//
+//    inflate(context, R.layout.overlay_view, this);
+//    ButterKnife.bind(this);
 
-    if (getLayoutDirectionFromLocale(Locale.getDefault()) == LAYOUT_DIRECTION_RTL) {
-      animationWidth = -animationWidth; // Account for animating in from the other side of screen.
-    }
+//    if (getLayoutDirectionFromLocale(Locale.getDefault()) == LAYOUT_DIRECTION_RTL) {
+//      animationWidth = -animationWidth; // Account for animating in from the other side of screen.
+//    }
 
   }
 

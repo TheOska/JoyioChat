@@ -2,6 +2,7 @@ package oska.joyiochat.adapter;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +18,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.golshadi.majid.core.DownloadManagerPro;
+import com.golshadi.majid.report.listener.DownloadManagerListener;
 import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -27,6 +30,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +38,11 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import io.realm.Realm;
 import oska.joyiochat.R;
 import oska.joyiochat.activity.ChatRoomDetailActivity;
+import oska.joyiochat.activity.MainActivity;
+import oska.joyiochat.database.VideoModel;
 import oska.joyiochat.module.JoyioChatMessage;
+
+import static android.os.Environment.DIRECTORY_PICTURES;
 
 /**
  * Created by theoska on 3/29/17.
@@ -46,16 +54,18 @@ public class JoyioChatAdapter extends FirebaseRecyclerAdapter<JoyioChatMessage, 
     private Activity activity;
     private ProgressBar mProgressBar;
     private List<JoyioChatMessage> joyioChatMessages;
+    private DownloadManagerPro downloadManagerPro;
     int count = 0;
     private Realm realm;
     private Query refQuery;
-    public JoyioChatAdapter(Query ref, Activity activity, ProgressBar mProgressBar, Realm realm) {
+    public JoyioChatAdapter(Query ref, Activity activity, ProgressBar mProgressBar, Realm realm, DownloadManagerPro downloadManagerPro) {
         super(JoyioChatMessage.class, R.layout.item_message, MessageViewHolder.class, ref);
         this.activity = activity;
         this.mProgressBar = mProgressBar;
         joyioChatMessages = new ArrayList<>();
         refQuery =ref;
         this.realm = realm;
+        this.downloadManagerPro = downloadManagerPro;
     }
 
     @Override
@@ -165,7 +175,26 @@ public class JoyioChatAdapter extends FirebaseRecyclerAdapter<JoyioChatMessage, 
                 getRef(position).child("videoUrl").addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        System.out.println(dataSnapshot.getValue());
+                        VideoModel videoModel = realm.where(VideoModel.class).equalTo("videoUrl", dataSnapshot.getValue().toString()).findFirst();
+                        if(videoModel != null){
+                            Log.d("oska", "inside if");
+                            try {
+                                downloadManagerPro.startDownload(downloadManagerPro.
+                                        addTask("joyiochat_video_"+videoModel.getId()+".mp4", dataSnapshot.getValue().toString(),
+                                                false,false));
+                                Log.d("oska", "video id " + videoModel.getId());
+                                realm.beginTransaction();
+                                videoModel.setLocalVideoPath(ChatRoomDetailActivity.LOCAL_DIR_JOYIOCHAT+
+                                        ChatRoomDetailActivity.LOCAL_FOLDER+
+                                        "joyiochat_video_"+videoModel.getId()+".mp4"
+                                );
+                                realm.commitTransaction();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+
                     }
 
                     @Override

@@ -31,6 +31,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -54,10 +55,12 @@ import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.multi.CompositeMultiplePermissionsListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.karumi.dexter.listener.multi.SnackbarOnAnyDeniedMultiplePermissionsListener;
+import com.squareup.otto.Subscribe;
 
 import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.SurfaceView;
 
+import java.io.File;
 import java.io.IOException;
 
 import butterknife.BindColor;
@@ -68,11 +71,14 @@ import butterknife.OnClick;
 import oska.joyiochat.R;
 import oska.joyiochat.eventbus.BusStation;
 import oska.joyiochat.eventbus.CaptureMessage;
+import oska.joyiochat.eventbus.JoyioVideoMessage;
 import oska.joyiochat.face.tracker.GraphicFaceTracker;
+import oska.joyiochat.listener.RenderListener;
 import oska.joyiochat.listener.VideoCaptureListener;
 import oska.joyiochat.permission.FaceTrackingMultiplePermissionListener;
 import oska.joyiochat.permission.PermissionErrorListener;
 import oska.joyiochat.permission.PermissionHelper;
+import oska.joyiochat.rajawali.MaskObjectRender;
 import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.recording.CaptureHelper;
 import oska.joyiochat.recording.LetterRecordActivity;
@@ -82,12 +88,13 @@ import oska.joyiochat.views.CameraSourcePreview;
 import oska.joyiochat.views.GraphicOverlay;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.os.Environment.DIRECTORY_MOVIES;
 
 /**
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
  */
-public final class FaceTrackerActivity extends AppCompatActivity implements VideoCaptureListener {
+public final class FaceTrackerActivity extends AppCompatActivity implements VideoCaptureListener, RenderListener {
     private static final String TAG = "FaceTracker";
     int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
     @BindView(R.id.topLayout) LinearLayout llRoot;
@@ -111,7 +118,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     private TelecineService telecineService;
     private SurfaceView surface;
     ObjRender objRender;
-
+    MaskObjectRender maskObjectRender;
     private MultiplePermissionsListener allPermissionsListener;
 
     /**
@@ -120,6 +127,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+//        BusStation.getBus().register(this);
+
         setContentView(R.layout.activity_face_detection);
 //        Dexter.initialize(this);
         ButterKnife.bind(this);
@@ -184,19 +193,34 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
         surface.setRenderMode(ISurface.RENDERMODE_CONTINUOUSLY);
         surface.setTransparent(true);
         objRender = new ObjRender(this);
-        surface.setSurfaceRenderer(objRender);
-
+        maskObjectRender = new MaskObjectRender(this);
+//        surface.setSurfaceRenderer(objRender);
+        surface.setSurfaceRenderer(maskObjectRender);
         mUtils = new Utils(this);
     }
     @OnClick(R.id.iv_capture_video)
     public void onClickCapture(){
         if (!startedCapturing) {
+            ivCaptureVideo.setImageDrawable(getResources().getDrawable(R.drawable.stop));
             CaptureHelper.fireScreenCaptureIntent(this);
             startedCapturing = true;
         }
-        else
+        else {
+            ivCaptureVideo.setImageDrawable(getResources().getDrawable(R.drawable.ic_camera_white_36dp));
             BusStation.getBus().post(new CaptureMessage("stop"));
+        }
 
+    }
+
+    @Subscribe
+    public void videoInfoBusStation(JoyioVideoMessage joyioVideoMessage){
+        Log.d("oska", joyioVideoMessage.getVideoName());
+        Intent intent = new Intent();
+        String dir = Environment.getExternalStoragePublicDirectory(DIRECTORY_MOVIES)+"/JoyioChat/";
+
+        intent.putExtra(ChatRoomDetailActivity.JOYIOMESSAGE_FILE_NAME, dir+joyioVideoMessage.getVideoName());
+        setResult(RESULT_OK, intent);
+        finish();
     }
     private void requestCameraPermission() {
         Log.w(TAG, "Camera permission is not granted. Requesting permission");
@@ -265,6 +289,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     @Override
     protected void onResume() {
         super.onResume();
+        BusStation.getBus().register(this);
         startCameraSource();
 
     }
@@ -275,6 +300,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     @Override
     protected void onPause() {
         super.onPause();
+        BusStation.getBus().unregister(this);
+
         mPreview.stop();
     }
 
@@ -379,7 +406,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     private class GraphicFaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
         public Tracker<Face> create(Face face) {
-            return new GraphicFaceTracker(mGraphicOverlay, mRefActivity, getApplicationContext(), objRender, mUtils);
+            return new GraphicFaceTracker(mGraphicOverlay, mRefActivity, getApplicationContext(), maskObjectRender, mUtils);
         }
     }
 
@@ -434,5 +461,10 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     @Override
     public void onStopVideoCapture(String fileName) {
 
+    }
+
+    @Override
+    public void onRendered() {
+        maskObjectRender.setRenderCompleted();
     }
 }

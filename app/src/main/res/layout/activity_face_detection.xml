@@ -46,10 +46,14 @@
         android:layout_height="0dp"
         android:layout_weight="0.1"
         android:background="@color/style_color_primary">
+
         <ImageView
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
             android:id="@+id/iv_capture_video"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/ic_camera_white_36dp"/>
+
     </LinearLayout>
 </LinearLayout>

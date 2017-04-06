@@ -41,8 +41,6 @@ import java.util.Locale;
 import javax.inject.Provider;
 
 import oska.joyiochat.R;
-import oska.joyiochat.eventbus.BusStation;
-import oska.joyiochat.eventbus.CaptureMessage;
 
 import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
 import static android.content.Context.MEDIA_PROJECTION_SERVICE;
@@ -90,7 +88,7 @@ final class RecordingSession {
 
   private final File outputRoot;
   private final DateFormat fileFormat =
-      new SimpleDateFormat("'JoyioChat 'yyyy-MM-dd-HH-mm-ss'.mp4'", Locale.US);
+      new SimpleDateFormat("'JoyioChat_'yyyy-MM-dd-HH-mm-ss'.mp4'", Locale.US);
 
   private final NotificationManager notificationManager;
   private final WindowManager windowManager;
@@ -104,6 +102,7 @@ final class RecordingSession {
   private boolean running;
   private long recordingStartNanos;
   private Activity activity;
+  private String outPutFileName;
   RecordingSession(Context context, Listener listener, int resultCode, Intent data,
                    Provider<Boolean> showCountDown, Provider<Integer> videoSizePercentage, Activity activity) {
 
@@ -120,7 +119,6 @@ final class RecordingSession {
       Log.d("oska", "activity is null");
     File picturesDir = Environment.getExternalStoragePublicDirectory(DIRECTORY_MOVIES);
     outputRoot = new File(picturesDir, "JoyioChat");
-//    BusStation.getBus().register(this);
 
     notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
     windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
@@ -137,6 +135,7 @@ final class RecordingSession {
 
       @Override
       public void onStart() {
+
         startRecording();
       }
 
@@ -144,6 +143,7 @@ final class RecordingSession {
       public void onStop() {
         Log.d("oska", "stop video called onStop function");
         stopRecording();
+
       }
 
       @Override
@@ -216,6 +216,7 @@ final class RecordingSession {
     recorder.setVideoEncodingBitRate(8 * 1000 * 1000);
 
     String outputName = fileFormat.format(new Date());
+    outPutFileName = outputName;
     outputFile = new File(outputRoot, outputName).getAbsolutePath();
     recorder.setOutputFile(outputFile);
 
@@ -246,6 +247,9 @@ final class RecordingSession {
 //      stopRecording();
 //    }
 //  }
+  public String getOutPutFileName(){
+    return outPutFileName;
+  }
   public void stopRecording() {
 
     if (!running) {

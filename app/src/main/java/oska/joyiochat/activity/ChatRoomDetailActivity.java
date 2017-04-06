@@ -1,5 +1,6 @@
 package oska.joyiochat.activity;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -36,6 +37,8 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
 import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.golshadi.majid.core.DownloadManagerPro;
+import com.golshadi.majid.report.listener.DownloadManagerListener;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.auth.api.Auth;
@@ -89,23 +92,25 @@ import static android.os.Environment.DIRECTORY_PICTURES;
  */
 
 public class ChatRoomDetailActivity extends AppCompatActivity implements
-        GoogleApiClient.OnConnectionFailedListener, VideoThumbnailListener{
+        GoogleApiClient.OnConnectionFailedListener, VideoThumbnailListener, DownloadManagerListener{
 
     private static final String TAG = "MainActivity";
     public static final String MESSAGES_CHILD = "messages";
     private static final int REQUEST_INVITE = 1;
     private static final int REQUEST_MEDIA = 2;
+    private static final int EXTRA_JOYIOCHAT = 5;
     private int selectedType;
     private static final int EXTRA_IMAGE = 3;
     private static final int EXTRA_VIDEO = 4;
-
+    private static final int JOYIOCHAT_REQUEST_CODE = 111;
+    public static final String JOYIOMESSAGE_FILE_NAME = "joyioMessageFileName";
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 10;
     public static final String ANONYMOUS = "anonymous";
     private static final String MESSAGE_SENT_EVENT = "message_sent";
     private static final String MESSAGE_URL = "http://friendlychat.firebase.google.com/message/";
     private static final String LOADING_IMAGE_URL = "https://www.google.com/images/spin-32.gif";
-    private static final String LOCAL_DIR_PIC = (Environment.getExternalStoragePublicDirectory(DIRECTORY_PICTURES)) + "";
-    private static final String LOCAL_FOLDER = "/JoyioChat/";
+    public static final String LOCAL_DIR_JOYIOCHAT = (Environment.getExternalStoragePublicDirectory(DIRECTORY_MOVIES)) + "";
+    public static final String LOCAL_FOLDER = "/JoyioChat/";
     private String mUsername;
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
@@ -125,17 +130,24 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     private GoogleApiClient mGoogleApiClient;
     private RelativeLayout relativeLayout;
     private Realm realm;
+    private DownloadManagerPro downloadManagerPro;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chatroom_detail);
-
         relativeLayout = (RelativeLayout) findViewById(R.id.rl_root);
         checkPermission();
+        initDownloadManger();
         getUserInfo();
         initChatRoomMsg();
         initSendMsg();
+    }
+
+    private void initDownloadManger() {
+        downloadManagerPro = new DownloadManagerPro(this);
+        downloadManagerPro.init(LOCAL_DIR_JOYIOCHAT+LOCAL_FOLDER, 3,this);
     }
 
     private void checkPermission() {
@@ -186,7 +198,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         Query query = mFirebaseDatabaseReference.child(MESSAGES_CHILD);
         updateRealm(query);
-        joyioChatAdapter = new JoyioChatAdapter( mFirebaseDatabaseReference.child(MESSAGES_CHILD), this, mProgressBar, realm);
+        joyioChatAdapter = new JoyioChatAdapter( mFirebaseDatabaseReference.child(MESSAGES_CHILD), this, mProgressBar, realm,downloadManagerPro);
         joyioChatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
@@ -233,8 +245,6 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
 
     private void initSendMsg() {
         mMessageEditText = (EditText) findViewById(R.id.messageEditText);
-//        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(mSharedPreferences
-//                .getInt("joyioChat_msg_length", DEFAULT_MSG_LENGTH_LIMIT))});
         mMessageEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -270,7 +280,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
 
                                 switch (position){
                                     case 0:
-                                        startActivity(new Intent(ChatRoomDetailActivity.this,FaceTrackerActivity.class));
+                                        selectedType = EXTRA_JOYIOCHAT;
+                                        startActivityForResult(new Intent(ChatRoomDetailActivity.this,FaceTrackerActivity.class),JOYIOCHAT_REQUEST_CODE);
                                         break;
                                     case 1:
                                         intent.setType("image/*");
@@ -378,6 +389,11 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                 // Sending failed or it was canceled, show failure message to the user
                 Log.d(TAG, "Failed to send invitation.");
             }
+        }else if(requestCode == JOYIOCHAT_REQUEST_CODE){
+             String filePath = data.getStringExtra(JOYIOMESSAGE_FILE_NAME);
+            Log.d("oska123", filePath );
+            Uri videoThumbnailUri = saveThumbnailBitmapFromJoyioMessage("temp", filePath);
+            this.onVideoThumbnailComplete(Uri.parse(filePath), videoThumbnailUri);
         }
     }
 
@@ -405,6 +421,10 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
 
     private void putVideoInStorage(final DatabaseReference databaseReference, final StorageReference storageReference, Uri videoUri, final Uri videoThumbnailUri, final String key) {
         final JoyioChatMessage joyioChatMessage = new JoyioChatMessage();
+        if(selectedType == EXTRA_JOYIOCHAT){
+            Log.d("oska", "run the extra joyioChat");
+            videoUri = getVideoContentUri(this,new File(videoUri.getPath()));
+        }
         storageReference.putFile(videoUri).addOnCompleteListener(ChatRoomDetailActivity.this,
                 new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -477,12 +497,14 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
 
         // video URI
         String fileFullPath = getRealPathFromURI_API19(uri);
+        Log.d("oska123", fileFullPath);
+
         Bitmap videoThumbnailBitmap = ThumbnailUtils.createVideoThumbnail(fileFullPath,
                 MediaStore.Images.Thumbnails.MINI_KIND);
 
 
         // video thumbnail path
-        String extStorageDirectory = LOCAL_DIR_PIC + LOCAL_FOLDER;
+        String extStorageDirectory = LOCAL_DIR_JOYIOCHAT + LOCAL_FOLDER;
         OutputStream outStream = null;
 
         String root = Environment.getExternalStorageDirectory().toString();
@@ -502,6 +524,37 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
             return null;
         }
     }
+
+
+
+    private Uri saveThumbnailBitmapFromJoyioMessage(String filename, String fileFullPath) {
+
+        Bitmap videoThumbnailBitmap = ThumbnailUtils.createVideoThumbnail(fileFullPath,
+                MediaStore.Images.Thumbnails.MINI_KIND);
+
+
+        // video thumbnail path
+        String extStorageDirectory = LOCAL_DIR_JOYIOCHAT + LOCAL_FOLDER;
+        OutputStream outStream = null;
+
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(extStorageDirectory);
+        myDir.mkdirs();
+        File file = new File (myDir, "temp.jpg");
+        if (file.exists ()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            videoThumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+            return Uri.fromFile(file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public String getRealPathFromURI_API19(Uri uri){
         String filePath = "";
         String wholeID = DocumentsContract.getDocumentId(uri);
@@ -535,6 +588,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
 
     @Override
     public void onVideoThumbnailComplete(final Uri videoUri,final Uri thumbnailUri) {
+        Log.d("oska123" , "videoUri " + videoUri);
         // Case that browser data from local
         JoyioChatMessage tempMessage = new JoyioChatMessage(null, mUsername, mPhotoUrl,
                 LOADING_IMAGE_URL);
@@ -558,5 +612,77 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                         }
                     }
                 });
+    }
+
+
+    public Uri getVideoContentUri(Context context, File videoFile) {
+        String filePath = videoFile.getAbsolutePath();
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                new String[] { MediaStore.Video.Media._ID },
+                MediaStore.Video.Media.DATA + "=? ",
+                new String[] { filePath }, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor
+                    .getColumnIndex(MediaStore.MediaColumns._ID));
+            Uri baseUri = Uri.parse("content://media/external/video/media");
+            return Uri.withAppendedPath(baseUri, "" + id);
+        } else {
+            if (videoFile.exists()) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Video.Media.DATA, filePath);
+                return context.getContentResolver().insert(
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public void OnDownloadStarted(long taskId) {
+        Log.d(TAG, "OnDownloadStarted");
+
+    }
+
+    @Override
+    public void OnDownloadPaused(long taskId) {
+        Log.d(TAG, "OnDownloadPaused");
+
+    }
+
+    @Override
+    public void onDownloadProcess(long taskId, double percent, long downloadedLength) {
+        Log.d(TAG, "onDownloadProcess");
+
+    }
+
+    @Override
+    public void OnDownloadFinished(long taskId) {
+        Log.d(TAG, "OnDownloadFinished");
+
+    }
+
+    @Override
+    public void OnDownloadRebuildStart(long taskId) {
+        Log.d(TAG, "OnDownloadRebuildStart");
+    }
+
+    @Override
+    public void OnDownloadRebuildFinished(long taskId) {
+        Log.d(TAG, "OnDownloadRebuildFinished");
+
+    }
+
+    @Override
+    public void OnDownloadCompleted(long taskId) {
+        Log.d(TAG, "OnDownloadCompleted");
+
+    }
+
+    @Override
+    public void connectionLost(long taskId) {
+        Log.d(TAG, "connectionLost");
+
     }
 }
