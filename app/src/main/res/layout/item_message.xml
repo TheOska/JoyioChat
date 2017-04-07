@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_marginBottom="10dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -39,29 +40,49 @@
                 android:adjustViewBounds="true"
                 android:background="@color/style_color_primary_dark"
                 android:scaleType="centerCrop"
-                android:visibility="gone" />
+                android:visibility="gone"
+                />
 
             <RelativeLayout
-                android:id="@+id/rl_video_container"
                 android:visibility="gone"
+                android:id="@+id/rl_video_container"
                 android:layout_width="250dp"
                 android:layout_height="250dp">
 
                 <ImageView
                     android:id="@+id/iv_video_thumbnail"
-                    android:src="@drawable/ic_play_arrow_black_24dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@color/cardview_dark_background"
                     android:scaleType="centerCrop" />
-
+                <com.wang.avi.AVLoadingIndicatorView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:visibility="gone"
+                    android:id="@+id/loading_view"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    app:indicatorColor="@color/indicator"
+                    app:indicatorName="BallPulseIndicator"
+                    />
                 <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/iv_play"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
                     android:background="#FFF"
+                    android:visibility="gone"
                     android:src="@drawable/ic_play_arrow_black_24dp" />
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/iv_download"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:background="#FFF"
+                    android:visibility="gone"
+                    android:src="@drawable/ic_file_download_black_36dp" />
             </RelativeLayout>
 
             <TextView

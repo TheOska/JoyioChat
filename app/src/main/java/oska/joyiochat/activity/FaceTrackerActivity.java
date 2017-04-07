@@ -217,7 +217,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
         Log.d("oska", joyioVideoMessage.getVideoName());
         Intent intent = new Intent();
         String dir = Environment.getExternalStoragePublicDirectory(DIRECTORY_MOVIES)+"/JoyioChat/";
-
+        intent.putExtra("videoName", joyioVideoMessage.getVideoName());
         intent.putExtra(ChatRoomDetailActivity.JOYIOMESSAGE_FILE_NAME, dir+joyioVideoMessage.getVideoName());
         setResult(RESULT_OK, intent);
         finish();

@@ -19,13 +19,16 @@ import oska.joyiochat.R;
 
 public class PermissionHelper {
 
-    public PermissionHelper(){}
+    public PermissionHelper() {
+    }
 
-    public void checkAll(Activity activity, MultiplePermissionsListener allPermissionsListener, PermissionRequestErrorListener errorListener){
+    public void checkAll(Activity activity, MultiplePermissionsListener allPermissionsListener, PermissionRequestErrorListener errorListener) {
         Dexter.withActivity(activity)
                 .withPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.SYSTEM_ALERT_WINDOW,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.WRITE_SETTINGS
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_SETTINGS,
+                        Manifest.permission.INTERNET
                 )
 
 
@@ -35,16 +38,16 @@ public class PermissionHelper {
     }
 
 
-    public MultiplePermissionsListener factoryMultiPermissionListener(ViewGroup rootView){
+    public MultiplePermissionsListener factoryMultiPermissionListener(ViewGroup rootView) {
 
         MultiplePermissionsListener feedbackViewMultiplePermissionListener =
                 new SimpleMultiplePermissionListener();
 
         return new CompositeMultiplePermissionsListener(feedbackViewMultiplePermissionListener,
-                        SnackbarOnAnyDeniedMultiplePermissionsListener.Builder.with(rootView,
-                                R.string.all_permissions_denied_feedback)
-                                .withOpenSettingsButton(R.string.permission_rationale_settings_button_text)
-                                .build());
+                SnackbarOnAnyDeniedMultiplePermissionsListener.Builder.with(rootView,
+                        R.string.all_permissions_denied_feedback)
+                        .withOpenSettingsButton(R.string.permission_rationale_settings_button_text)
+                        .build());
     }
 
 }

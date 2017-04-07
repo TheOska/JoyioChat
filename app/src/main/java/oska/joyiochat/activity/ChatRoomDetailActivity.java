@@ -131,13 +131,16 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     private RelativeLayout relativeLayout;
     private Realm realm;
     private DownloadManagerPro downloadManagerPro;
-
+    private String selectedVideoName;
+    private String fileFullPath;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chatroom_detail);
         relativeLayout = (RelativeLayout) findViewById(R.id.rl_root);
+        selectedVideoName = "";
+        fileFullPath= "";
         checkPermission();
         initDownloadManger();
         getUserInfo();
@@ -146,8 +149,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     }
 
     private void initDownloadManger() {
-        downloadManagerPro = new DownloadManagerPro(this);
-        downloadManagerPro.init(LOCAL_DIR_JOYIOCHAT+LOCAL_FOLDER, 3,this);
+        downloadManagerPro = new DownloadManagerPro(this.getApplicationContext());
+        downloadManagerPro.init("Movies/JoyioChat/", 3,this);
     }
 
     private void checkPermission() {
@@ -194,7 +197,6 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         mMessageRecyclerView = (RecyclerView) findViewById(R.id.messageRecyclerView);
         mLinearLayoutManager = new LinearLayoutManager(this);
         mLinearLayoutManager.setStackFromEnd(true);
-
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         Query query = mFirebaseDatabaseReference.child(MESSAGES_CHILD);
         updateRealm(query);
@@ -227,9 +229,13 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                 if(dataSnapshot.exists()){
                     for (DataSnapshot issue : dataSnapshot.getChildren()) {
                         if(issue.hasChild("videoUrl")){
+
                             VideoModel videoModel = realm.where(VideoModel.class).equalTo("videoUrl", issue.child("videoUrl").getValue().toString()).findFirst();
-                            if(videoModel == null) // don't have this record, than insert
+                            if(videoModel == null) { // don't have this record, than insert
+//                                Log.d("oska123" , "missed video url " +videoModel.getVideoUrl());
                                 insertToDB(issue.child("videoUrl").getValue().toString());
+
+                            }
                         }
                     }
                 }
@@ -390,8 +396,9 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                 Log.d(TAG, "Failed to send invitation.");
             }
         }else if(requestCode == JOYIOCHAT_REQUEST_CODE){
-             String filePath = data.getStringExtra(JOYIOMESSAGE_FILE_NAME);
-            Log.d("oska123", filePath );
+            String filePath = data.getStringExtra(JOYIOMESSAGE_FILE_NAME);
+            selectedVideoName = data.getStringExtra("videoName");
+            fileFullPath = LOCAL_DIR_JOYIOCHAT+LOCAL_FOLDER+data.getStringExtra("videoName");
             Uri videoThumbnailUri = saveThumbnailBitmapFromJoyioMessage("temp", filePath);
             this.onVideoThumbnailComplete(Uri.parse(filePath), videoThumbnailUri);
         }
@@ -431,8 +438,6 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                         @SuppressWarnings("VisibleForTests") Uri downloadUrl =  task.getResult().getMetadata().getDownloadUrl();
                         if (task.isSuccessful()) {
-
-
                             joyioChatMessage.setText(null);
                             joyioChatMessage.setName(mUsername);
                             joyioChatMessage.setPhotoUrl(mPhotoUrl);
@@ -466,7 +471,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                             joyioChatMessage.setVideoThumbnailUrl(thumbnailUrl.toString());
                             mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
                                     .setValue(joyioChatMessage);
-//                            insertToDB(strDownloadUrl);
+                            insertToDB(strDownloadUrl);
                         }else
                             Log.w(TAG, "thumbnail image upload task was not successful.", task.getException());
                     }
@@ -487,6 +492,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                 VideoModel videoModel = new VideoModel();
                 videoModel.setId(maxID);
                 videoModel.setVideoUrl(strDownloadUrl);
+                videoModel.setLocalVideoPath(fileFullPath);
+                fileFullPath = "";
                 realm.insertOrUpdate(videoModel);
             }
         });
@@ -496,7 +503,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     private Uri saveThumbnailBitmap(String filename, Uri uri) {
 
         // video URI
-        String fileFullPath = getRealPathFromURI_API19(uri);
+        fileFullPath = getRealPathFromURI_API19(uri);
         Log.d("oska123", fileFullPath);
 
         Bitmap videoThumbnailBitmap = ThumbnailUtils.createVideoThumbnail(fileFullPath,
@@ -660,7 +667,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     @Override
     public void OnDownloadFinished(long taskId) {
         Log.d(TAG, "OnDownloadFinished");
-
+        joyioChatAdapter.downloadCompleteChange();
     }
 
     @Override
@@ -670,7 +677,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
 
     @Override
     public void OnDownloadRebuildFinished(long taskId) {
-        Log.d(TAG, "OnDownloadRebuildFinished");
+//        Log.d(TAG, "OnDownloadRebuildFinished " +downloadManagerPro.singleDownloadStatus());
+
 
     }
 
