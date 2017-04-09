@@ -37,7 +37,7 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.5.1'
     compile 'com.jakewharton.timber:timber:4.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'de.hdodenhof:circleimageview:2.0.0'
+    compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'org.rajawali3d:rajawali:1.1.777@aar'
     compile 'com.googlecode.mp4parser:isoparser:1.1.21'
     compile 'com.google.dagger:dagger:2.8'

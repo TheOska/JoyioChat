@@ -10,6 +10,7 @@ import com.google.android.gms.vision.face.FaceDetector;
 
 import oska.joyiochat.activity.FaceTrackerActivity;
 import oska.joyiochat.listener.FaceInfoDetectListener;
+import oska.joyiochat.rajawali.CanvasTextRenderer;
 import oska.joyiochat.rajawali.MaskObjectRender;
 import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.utils.MobileVisionUtils;
@@ -36,6 +37,7 @@ public class GraphicFaceTracker extends Tracker<Face> {
     private Context context;
     private ObjRender objRender;
     private MaskObjectRender maskObjectRender;
+    private CanvasTextRenderer CanvasTextRenderer;
     private Utils mUtils;
     private int lastEmotionIndex, lastEyeOpenIndex;
     private final float scaleX = 2.88005601079881f;
@@ -100,6 +102,22 @@ public class GraphicFaceTracker extends Tracker<Face> {
         Log.d("mUtils", "y :" +mUtils.getScreenWidth());
     }
 
+    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity, Context context, CanvasTextRenderer CanvasTextRenderer, Utils utils) {
+        mOverlay = overlay;
+        mUtils = utils;
+        mFaceGraphic = new FaceGraphic(overlay, activity, mUtils, faceInfoDetectListener);
+        this.activity = (FaceTrackerActivity)activity;
+        this.context = context;
+        this.CanvasTextRenderer = CanvasTextRenderer;
+        lastEmotionIndex = -1;
+        timeLocked =false;
+
+
+        Log.d("mUtils", "x :" +mUtils.getScreenWidth());
+        Log.d("mUtils", "y :" +mUtils.getScreenWidth());
+    }
+
+
     /**
      * Start tracking the detected face instance within the face overlay.
      *
@@ -127,13 +145,13 @@ public class GraphicFaceTracker extends Tracker<Face> {
         if(eyesLeftOpenRate > MobileVisionUtils.THRESHOLD_EYE_LEFT_OPEN ){
             initFalseDetection();
             if(lastEyeOpenIndex != MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN) {
-                renderGlass();
+//                renderGlass();
                 lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
             }
-            maskObjectRender.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
-                    faceY+ RajawaliUtils.glassObjOffsetY,
-                    rotationY);
-            maskObjectRender.zoomInOutObj(-faceZ);
+//            maskObjectRender.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
+//                    faceY+ RajawaliUtils.glassObjOffsetY,
+//                    rotationY);
+//            maskObjectRender.zoomInOutObj(-faceZ);
         }
 
         if(eyesLeftOpenRate < MobileVisionUtils.THRESHOLD_EYE_LEFT_CLOSE && lastEyeOpenIndex == MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN){
@@ -146,7 +164,7 @@ public class GraphicFaceTracker extends Tracker<Face> {
 
         }
         if(deltaTime > MobileVisionUtils.FALSE_POSITIVE_FILTER ){
-            remove3D();
+//            remove3D();
             lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_CLOSE;
         }
 

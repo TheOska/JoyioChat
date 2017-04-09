@@ -29,8 +29,8 @@
         >
         <oska.joyiochat.views.GraphicOverlay
             android:id="@+id/faceOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="414dp"
+            android:layout_height="530dp"
             />
 
         <org.rajawali3d.view.SurfaceView
@@ -42,6 +42,7 @@
     </oska.joyiochat.views.CameraSourcePreview>
 
     <LinearLayout
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.1"
@@ -56,4 +57,13 @@
             android:src="@drawable/ic_camera_white_36dp"/>
 
     </LinearLayout>
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_emotion_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        android:background="@color/style_color_primary"/>
+
 </LinearLayout>
