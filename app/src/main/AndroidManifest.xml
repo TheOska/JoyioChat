@@ -32,7 +32,15 @@
             android:label="test"/>
 
         <activity android:name=".activity.FaceTrackerActivity"
-            android:label="face_tracker"/>
+            android:label="face_tracker">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
         <activity android:name=".test.PhotoViewerActivity"
             android:label="photo view"/>
         <activity android:name=".recording.LetterRecordActivity">
@@ -40,11 +48,7 @@
 
         </activity>
         <activity android:name=".activity.ChatRoomActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>R
         </activity>
 
         <service android:name=".recording.TelecineService"/>

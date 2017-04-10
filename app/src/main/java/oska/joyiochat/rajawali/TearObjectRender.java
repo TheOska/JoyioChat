@@ -2,43 +2,26 @@ package oska.joyiochat.rajawali;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.opengl.GLES20;
-import android.support.annotation.NonNull;
-import android.util.Log;
-import android.view.MotionEvent;
 
 import org.rajawali3d.Object3D;
-import org.rajawali3d.animation.Animation;
-import org.rajawali3d.animation.Animation3D;
-import org.rajawali3d.animation.EllipticalOrbitAnimation3D;
 import org.rajawali3d.cameras.Camera;
-import org.rajawali3d.lights.PointLight;
 import org.rajawali3d.loader.LoaderOBJ;
 import org.rajawali3d.loader.ParsingException;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.methods.DiffuseMethod;
 import org.rajawali3d.materials.methods.SpecularMethod;
 import org.rajawali3d.materials.textures.ATexture;
-import org.rajawali3d.materials.textures.NormalMapTexture;
 import org.rajawali3d.materials.textures.Texture;
-import org.rajawali3d.math.Matrix4;
-import org.rajawali3d.math.vector.Vector3;
-import org.rajawali3d.renderer.Renderer;
-import org.rajawali3d.util.GLU;
-import org.rajawali3d.util.ObjectColorPicker;
-import org.rajawali3d.util.OnObjectPickedListener;
-
-import javax.microedition.khronos.opengles.GL10;
 
 import oska.joyiochat.R;
 import oska.joyiochat.listener.RenderListener;
 import oska.joyiochat.utils.RajawaliUtils;
 
 /**
- * Created by theoska on 4/5/17.
+ * Created by theoska on 4/10/17.
  */
 
-public class MaskObjectRender extends MovableObjectRenderer {
+public class TearObjectRender extends MovableObjectRenderer {
     private Object3D mObjectGroup;
     private Camera camera;
     private Context context;
@@ -46,7 +29,7 @@ public class MaskObjectRender extends MovableObjectRenderer {
     private final String TAG = "ObjRender";
     private boolean renderCompleted;
 
-    public MaskObjectRender(Context context) {
+    public TearObjectRender(Context context) {
         super(context);
         this.context = context;
         renderListener = (RenderListener)context;
@@ -62,7 +45,7 @@ public class MaskObjectRender extends MovableObjectRenderer {
         initLighting();
         camera.setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS);
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager, R.raw.themask_resize);
+                mTextureManager, R.raw.cry_obj);
 
         try {
             objParser.parse();
@@ -73,19 +56,19 @@ public class MaskObjectRender extends MovableObjectRenderer {
             e.printStackTrace();
         }
 
-        Material maskMaterial = new Material();
-        maskMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
-        maskMaterial.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
-        maskMaterial.enableLighting(true);
+        Material tearMaterial = new Material();
+        tearMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
+        tearMaterial.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
+        tearMaterial.enableLighting(true);
         try {
-            maskMaterial.addTexture(new Texture("earthDiffuseTex", R.drawable.earth_diffuse));
+            tearMaterial.addTexture(new Texture("tear", R.drawable.tear_material));
         } catch (ATexture.TextureException e) {
             e.printStackTrace();
         }
-//        maskMaterial.setColorInfluence(0);
+        tearMaterial.setColorInfluence(0);
 //
-//        mObjectGroup.getChildAt(0).setMaterial(maskMaterial);
-
+        mObjectGroup.getChildAt(0).setMaterial(tearMaterial);
+        mObjectGroup.setScale(3);
         renderListener.onRendered();
 
         initObj();

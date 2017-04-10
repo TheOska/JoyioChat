@@ -1,19 +1,30 @@
 package oska.joyiochat.rajawali;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 
 import org.rajawali3d.Object3D;
 import org.rajawali3d.animation.Animation;
 import org.rajawali3d.animation.Animation3D;
 import org.rajawali3d.animation.EllipticalOrbitAnimation3D;
+import org.rajawali3d.animation.RotateOnAxisAnimation;
+import org.rajawali3d.animation.TranslateAnimation3D;
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.lights.PointLight;
 import org.rajawali3d.loader.LoaderOBJ;
 import org.rajawali3d.loader.ParsingException;
+import org.rajawali3d.materials.Material;
+import org.rajawali3d.materials.methods.DiffuseMethod;
+import org.rajawali3d.materials.methods.SpecularMethod;
+import org.rajawali3d.materials.textures.ATexture;
+import org.rajawali3d.materials.textures.NormalMapTexture;
+import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.Matrix4;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.renderer.Renderer;
@@ -28,14 +39,15 @@ import oska.joyiochat.utils.RajawaliUtils;
  * Created by theoska on 4/8/17.
  */
 
-public class BallObjectRenderer extends Renderer implements OnObjectPickedListener {
+public class BallObjectRenderer extends Renderer{
 
     private PointLight mLight;
     private Object3D mObjectGroup;
     private Animation3D mCameraAnim, mLightAnim;
     private Camera camera;
     private Context context;
-
+    private TranslateAnimation3D camHorizontalAnim;
+    private RotateOnAxisAnimation camRotationAnim;
     /**
      * Variables for For 3d Transform
      * */
@@ -64,11 +76,18 @@ public class BallObjectRenderer extends Renderer implements OnObjectPickedListen
     @Override
     protected void initScene() {
         camera = getCurrentCamera();
+
+
+        getCurrentScene().addLight(mLight);
+        getCurrentCamera().setX(3);
+        getCurrentCamera().setZ(16);
+        getCurrentCamera().setY(-3);
+
+
         renderCompleted = false;
         setupTransformMatrix();
 
         setupLighting();
-        setupMovableObj();
         camera.setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS);
 
         setupObj();
@@ -78,26 +97,85 @@ public class BallObjectRenderer extends Renderer implements OnObjectPickedListen
 
     private void setupObj() {
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager, R.raw.pokemon_ball);
-
+                mTextureManager, R.raw.pokemon_ball_resize_2_obj);
         try {
             objParser.parse();
             mObjectGroup = objParser.getParsedObject();
-            mObjectGroup.setScale(0.35f);
-//            mObjectGroup.setMaterial(material);
+            getCurrentScene().addChild(mObjectGroup);
+
+
+            camHorizontalAnim = new TranslateAnimation3D(
+                    new Vector3(3, -3, 16),
+                    new Vector3(-3, -3 ,16));
+            camHorizontalAnim.setDurationMilliseconds(3000);
+            camHorizontalAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+            camHorizontalAnim.setRepeatMode(Animation.RepeatMode.REVERSE_INFINITE);
+            camHorizontalAnim.setTransformable3D(getCurrentCamera());
+
+
+            Vector3 axis = new Vector3(3, 16, -3);
+            axis.normalize();
+
+            camRotationAnim = new RotateOnAxisAnimation(axis, 0, 360);
+            camRotationAnim.setDurationMilliseconds(3000);
+            camRotationAnim.setInterpolator(new LinearInterpolator());
+            camRotationAnim.setRepeatMode(Animation.RepeatMode.REVERSE_INFINITE);
+            camRotationAnim.setTransformable3D(mObjectGroup);
 
         } catch (ParsingException e) {
             e.printStackTrace();
         }
+
+        try {
+
+
+            Material material2 = new Material();
+            material2.setDiffuseMethod(new DiffuseMethod.Lambert());
+            material2.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
+            material2.enableLighting(true);
+            try {
+                material2.addTexture(new Texture("earthDiffuseTex", R.drawable.earth_diffuse));
+                material2.addTexture(new NormalMapTexture("eartNormalTex", R.drawable.earth_diffuse));
+            } catch (ATexture.TextureException e) {
+                e.printStackTrace();
+            }
+            material2.setColorInfluence(0);
+
+            Material roadMaterial = new Material();
+            roadMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
+            roadMaterial.addTexture(new Texture("roadTex", R.drawable.earth_diffuse));
+            roadMaterial.setColorInfluence(0);
+
+            mObjectGroup.getChildAt(0).setMaterial(material2);
+            for (int i = 0 ; i< mObjectGroup.getNumChildren(); i++ ){
+                mObjectGroup.getChildAt(i).setMaterial(material2);
+                Log.d("LoadModel" , "num " + i );
+            }
+//				ATexture aTexture = new Texture("texture" , R.raw.pokeball_mtl);
+//				mObjectGroup.getMaterial().addTexture(aTexture);
+            mObjectGroup.setScale(0.5);
+
+        } catch (ATexture.TextureException e) {
+            e.printStackTrace();
+        }
+
+        mLightAnim = new EllipticalOrbitAnimation3D(new Vector3(),
+                new Vector3(0, 10, 0), Vector3.getAxisVector(Vector3.Axis.Z), 0,
+                360, EllipticalOrbitAnimation3D.OrbitDirection.CLOCKWISE);
+
+        mLightAnim.setDurationMilliseconds(3000);
+        mLightAnim.setRepeatMode(Animation.RepeatMode.INFINITE);
+        mLightAnim.setTransformable3D(mLight);
+
+        getCurrentScene().registerAnimation(camHorizontalAnim);
+        getCurrentScene().registerAnimation(mLightAnim);
+        getCurrentScene().registerAnimation(camRotationAnim);
+        camHorizontalAnim.play();
+        camRotationAnim.play();
+
     }
     public void stopRendObj(){
         getCurrentScene().removeChild(mObjectGroup);
-    }
-
-
-    private void setupMovableObj() {
-        mPicker = new ObjectColorPicker(this);
-        mPicker.setOnObjectPickedListener(this);
     }
 
 
@@ -154,15 +232,6 @@ public class BallObjectRenderer extends Renderer implements OnObjectPickedListen
     }
 
 
-    @Override
-    public void onObjectPicked(@NonNull Object3D object) {
-        mObjectGroup = object;
 
-    }
-
-    @Override
-    public void onNoObjectPicked() {
-
-    }
 }
 

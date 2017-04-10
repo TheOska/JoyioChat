@@ -7,11 +7,18 @@ import android.util.Log;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
+import com.squareup.otto.Subscribe;
+
+import java.util.ArrayList;
 
 import oska.joyiochat.activity.FaceTrackerActivity;
+import oska.joyiochat.eventbus.EmotionSelectMessage;
+import oska.joyiochat.listener.EmotionSelectListener;
 import oska.joyiochat.listener.FaceInfoDetectListener;
+import oska.joyiochat.module.EmotionModel;
 import oska.joyiochat.rajawali.CanvasTextRenderer;
 import oska.joyiochat.rajawali.MaskObjectRender;
+import oska.joyiochat.rajawali.MovableObjectRenderer;
 import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.utils.MobileVisionUtils;
 import oska.joyiochat.utils.RajawaliUtils;
@@ -29,19 +36,20 @@ import oska.joyiochat.views.GraphicOverlay;
  *
  * Create a callback to the GraphicOverlay to compu
  */
-public class GraphicFaceTracker extends Tracker<Face> {
+public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectListener{
     private static final String TAG = "GraphicFaceTracker";
     private GraphicOverlay mOverlay;
     private FaceGraphic mFaceGraphic;
     private FaceTrackerActivity activity;
     private Context context;
-    private ObjRender objRender;
-    private MaskObjectRender maskObjectRender;
-    private CanvasTextRenderer CanvasTextRenderer;
+    private MovableObjectRenderer masterRenderer;
+    private boolean isMovable;
+    private int selectedModelIndex;
     private Utils mUtils;
     private int lastEmotionIndex, lastEyeOpenIndex;
     private final float scaleX = 2.88005601079881f;
     private final float scaleY = 3.196312015938482f;
+    private ArrayList<EmotionModel> emotionModelArrayList;
     private double emotionChangeStart, deltaTime;
     private boolean timeLocked;
     private float faceSmilingRate, eyesLeftOpenRate, faceX, faceY, faceZ, rotationY;
@@ -78,7 +86,6 @@ public class GraphicFaceTracker extends Tracker<Face> {
         mFaceGraphic = new FaceGraphic(overlay, activity, mUtils, faceInfoDetectListener);
         this.activity = (FaceTrackerActivity)activity;
         this.context = context;
-        this.objRender = objRender;
         lastEmotionIndex = -1;
         timeLocked =false;
 
@@ -87,35 +94,17 @@ public class GraphicFaceTracker extends Tracker<Face> {
         Log.d("mUtils", "y :" +mUtils.getScreenWidth());
     }
 
-    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity, Context context, MaskObjectRender maskObjectRender, Utils utils) {
+    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity, Context context, ArrayList<EmotionModel> emotionModelArrayList, Utils utils) {
         mOverlay = overlay;
         mUtils = utils;
         mFaceGraphic = new FaceGraphic(overlay, activity, mUtils, faceInfoDetectListener);
         this.activity = (FaceTrackerActivity)activity;
         this.context = context;
-        this.maskObjectRender = maskObjectRender;
         lastEmotionIndex = -1;
         timeLocked =false;
-
-
-        Log.d("mUtils", "x :" +mUtils.getScreenWidth());
-        Log.d("mUtils", "y :" +mUtils.getScreenWidth());
+        this.emotionModelArrayList = emotionModelArrayList;
     }
 
-    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity, Context context, CanvasTextRenderer CanvasTextRenderer, Utils utils) {
-        mOverlay = overlay;
-        mUtils = utils;
-        mFaceGraphic = new FaceGraphic(overlay, activity, mUtils, faceInfoDetectListener);
-        this.activity = (FaceTrackerActivity)activity;
-        this.context = context;
-        this.CanvasTextRenderer = CanvasTextRenderer;
-        lastEmotionIndex = -1;
-        timeLocked =false;
-
-
-        Log.d("mUtils", "x :" +mUtils.getScreenWidth());
-        Log.d("mUtils", "y :" +mUtils.getScreenWidth());
-    }
 
 
     /**
@@ -140,18 +129,35 @@ public class GraphicFaceTracker extends Tracker<Face> {
 
     }
 
-    private void checkEyeOpenCondition() {
 
+
+    @Override
+    public void onSelected(int selectedIndex) {
+        selectedModelIndex = selectedIndex;
+        if (emotionModelArrayList.get(selectedModelIndex).getObjRenderer() instanceof MovableObjectRenderer){
+            masterRenderer = (MovableObjectRenderer) emotionModelArrayList.get(selectedModelIndex).getObjRenderer();
+            isMovable = true;
+            Log.d("oska123", "it is movable");
+        }else{
+            isMovable = false;
+            Log.d("oska123", "it is not movable");
+
+        }
+    }
+
+    private void checkEyeOpenCondition() {
+        if(isMovable == false)
+            return;
         if(eyesLeftOpenRate > MobileVisionUtils.THRESHOLD_EYE_LEFT_OPEN ){
             initFalseDetection();
             if(lastEyeOpenIndex != MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN) {
-//                renderGlass();
+                renderObject();
                 lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
             }
-//            maskObjectRender.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
-//                    faceY+ RajawaliUtils.glassObjOffsetY,
-//                    rotationY);
-//            maskObjectRender.zoomInOutObj(-faceZ);
+            masterRenderer.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
+                    faceY+ RajawaliUtils.glassObjOffsetY,
+                    rotationY);
+            masterRenderer.zoomInOutObj(-faceZ);
         }
 
         if(eyesLeftOpenRate < MobileVisionUtils.THRESHOLD_EYE_LEFT_CLOSE && lastEyeOpenIndex == MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN){
@@ -164,21 +170,22 @@ public class GraphicFaceTracker extends Tracker<Face> {
 
         }
         if(deltaTime > MobileVisionUtils.FALSE_POSITIVE_FILTER ){
-//            remove3D();
+            remove3D();
             lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_CLOSE;
         }
 
     }
 
     private void checkSmilingCondition() {
-
+        if(isMovable == false)
+            return;
         if(faceSmilingRate > MobileVisionUtils.THRESHOLD_SMILE ){
             initFalseDetection();
             if(lastEmotionIndex != MobileVisionUtils.EMOTION_INDEX_SMILE) {
-                renderGlass();
+                renderObject();
                 lastEmotionIndex = MobileVisionUtils.EMOTION_INDEX_SMILE;
             }
-            maskObjectRender.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
+            masterRenderer.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
                     faceY+ RajawaliUtils.glassObjOffsetY,
                     rotationY);
         }
@@ -204,15 +211,14 @@ public class GraphicFaceTracker extends Tracker<Face> {
     }
 
 
-    public void renderGlass(){
-        Log.d("oska" , "renderGlass");
+    public void renderObject(){
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Log.d("oska" , "renderGlass run");
 
-                maskObjectRender.startRendObj();
-                maskObjectRender.startRendObj();
+                masterRenderer.startRendObj();
+                masterRenderer.startRendObj();
             }
         });
     }
@@ -221,7 +227,7 @@ public class GraphicFaceTracker extends Tracker<Face> {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                maskObjectRender.stopRendObj();
+                masterRenderer.stopRendObj();
             }
         });
     }

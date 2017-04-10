@@ -13,10 +13,9 @@ public class EmotionModel {
     int icon;
     boolean isloaded;
     public EmotionModel(){}
-    public EmotionModel(int index, String name, Renderer objRenderer, int icon, boolean isloaded) {
+    public EmotionModel(int index, String name, int icon, boolean isloaded) {
         this.index = index;
         this.name = name;
-        this.objRenderer = objRenderer;
         this.icon = icon;
         this.isloaded = isloaded;
     }

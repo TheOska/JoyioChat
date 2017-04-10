@@ -42,6 +42,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -59,6 +60,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.karumi.dexter.listener.multi.SnackbarOnAnyDeniedMultiplePermissionsListener;
 import com.squareup.otto.Subscribe;
 
+import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.SurfaceView;
 
@@ -75,8 +77,10 @@ import oska.joyiochat.R;
 import oska.joyiochat.adapter.EmotionListAdapter;
 import oska.joyiochat.eventbus.BusStation;
 import oska.joyiochat.eventbus.CaptureMessage;
+import oska.joyiochat.eventbus.EmotionSelectMessage;
 import oska.joyiochat.eventbus.JoyioVideoMessage;
 import oska.joyiochat.face.tracker.GraphicFaceTracker;
+import oska.joyiochat.listener.EmotionSelectListener;
 import oska.joyiochat.listener.GeneralRecyclerViewTouchListener;
 import oska.joyiochat.listener.RenderListener;
 import oska.joyiochat.listener.VideoCaptureListener;
@@ -90,6 +94,7 @@ import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.recording.CaptureHelper;
 import oska.joyiochat.recording.LetterRecordActivity;
 import oska.joyiochat.recording.TelecineService;
+import oska.joyiochat.utils.EmotionModelIndex;
 import oska.joyiochat.utils.Utils;
 import oska.joyiochat.views.CameraSourcePreview;
 import oska.joyiochat.views.GraphicOverlay;
@@ -102,6 +107,7 @@ import static android.os.Environment.DIRECTORY_MOVIES;
  * overlay graphics to indicate the position, size, and ID of each face.
  */
 public final class FaceTrackerActivity extends AppCompatActivity implements VideoCaptureListener, RenderListener {
+
     private static final String TAG = "FaceTracker";
     int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
     @BindView(R.id.topLayout)
@@ -125,6 +131,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     private static final float MID_FPS = 40.0f;
     private static final float LOW_FPS = 30.0f;
     private static final float LOWEST_FPS = 24.0f;
+    private EmotionSelectListener emotionSelectListener;
     private ArrayList<EmotionModel> emotionModelArrayList;
     private boolean startedCapturing;
     private Utils mUtils;
@@ -136,7 +143,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     MaskObjectRender maskObjectRender;
     private CanvasTextRenderer canvasTextRenderer;
     private MultiplePermissionsListener allPermissionsListener;
-
+    private Activity activity;
     /**
      * Initializes the UI and initiates the creation of a face detector.
      */
@@ -144,7 +151,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 //        BusStation.getBus().register(this);
-
+        activity = this;
         setContentView(R.layout.activity_face_detection);
         ButterKnife.bind(this);
         checkPermission();
@@ -160,19 +167,24 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     private void initEmotionModel() {
         emotionModelArrayList = new ArrayList<>();
 
-        EmotionModel modelSpace = new EmotionModel(0, "null", null, 0, false);
+        EmotionModel modelSpace = new EmotionModel(0, "null", 0, false);
         emotionModelArrayList.add(modelSpace);
         emotionModelArrayList.add(modelSpace);
 
-        EmotionModel model1 = new EmotionModel(0, "camera", null,  R.drawable.ic_camera_white_36dp, true);
+        EmotionModel model1 = new EmotionModel(1, "camera", R.drawable.ic_camera_white_36dp, true);
         emotionModelArrayList.add(model1);
 
-        EmotionModel model2 = new EmotionModel(0, "glasses", null,  R.drawable.glasses, false);
+        EmotionModel model2 = new EmotionModel(EmotionModelIndex.GLASSES_MODEL,
+                "glasses", R.drawable.glasses, false);
         emotionModelArrayList.add(model2);
 
-        EmotionModel model3 = new EmotionModel(0, "camera", null,  R.drawable.question_mark, false);
+        EmotionModel model3 = new EmotionModel(EmotionModelIndex.QUESTION_MARK_MODEL,
+                "question", R.drawable.question_mark, false);
         emotionModelArrayList.add(model3);
 
+        EmotionModel model4 = new EmotionModel(EmotionModelIndex.MASK_MODEL,
+                "mask", R.drawable.mask_icon, false);
+        emotionModelArrayList.add(model4);
 
     }
 
@@ -233,14 +245,14 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
         surface.setRenderMode(ISurface.RENDERMODE_CONTINUOUSLY);
         surface.setTransparent(true);
         objRender = new ObjRender(this);
-        maskObjectRender = new MaskObjectRender(this);
-        canvasTextRenderer = new CanvasTextRenderer(this);
-//        surface.setSurfaceRenderer(objRender);
-        surface.setSurfaceRenderer(canvasTextRenderer);
+
+        surface.setSurfaceRenderer(objRender);
+
+
+
         mUtils = new Utils(this);
     }
 
-    @OnClick(R.id.iv_capture_video)
     public void onClickCapture() {
         if (!startedCapturing) {
             ivCaptureVideo.setImageDrawable(getResources().getDrawable(R.drawable.stop));
@@ -272,7 +284,53 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
         rvEmotion.addOnItemTouchListener(new GeneralRecyclerViewTouchListener(this, rvEmotion, new GeneralRecyclerViewTouchListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
-                Toast.makeText(getApplicationContext(), "clicked", Toast.LENGTH_SHORT).show();
+                Log.d("oska123", "clicked position " + position);
+                //  minus 2 is for spacing item
+                int selectedModelIndex = position;
+                int realPosition = position - 2;
+
+                if (realPosition == 0) {
+
+
+                    onClickCapture();
+                } else {
+
+                    mPreview.removeView(surface);
+                    surface = new SurfaceView(getApplicationContext());
+                    surface.setFrameRate(LOWEST_FPS);
+                    surface.setRenderMode(ISurface.RENDERMODE_CONTINUOUSLY);
+                    surface.setTransparent(true);
+                    Renderer newRenderer = null;
+                    switch (emotionModelArrayList.get(position).getIndex()){
+                        case EmotionModelIndex.GLASSES_MODEL:
+                            newRenderer = new ObjRender(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case EmotionModelIndex.QUESTION_MARK_MODEL:
+                            newRenderer = new CanvasTextRenderer(activity);
+                            break;
+
+                        case EmotionModelIndex.MASK_MODEL:
+                            newRenderer = new MaskObjectRender(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+
+                    }
+
+                    try {
+                        surface.setSurfaceRenderer(newRenderer);
+                    } catch (IllegalStateException e) {
+                        Toast.makeText(getApplicationContext(), " something went wrong", Toast.LENGTH_SHORT).show();
+                    }
+                    mPreview.addView(surface, new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+
+                    ));
+                    emotionSelectListener.onSelected(position);
+                }
+
+
             }
 
             @Override
@@ -359,10 +417,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
         mPreview.stop();
     }
 
-    /**
-     * Releases the resources associated with the camera source, the associated detector, and the
-     * rest of the processing pipeline.
-     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -371,22 +425,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
 //        }
     }
 
-    /**
-     * Callback for the result from requesting permissions. This method
-     * is invoked for every call on {@link #requestPermissions(String[], int)}.
-     * <p>
-     * <strong>Note:</strong> It is possible that the permissions request interaction
-     * with the user is interrupted. In this case you will receive empty permissions
-     * and results arrays which should be treated as a cancellation.
-     * </p>
-     *
-     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
-     * @param permissions  The requested permissions. Never null.
-     * @param grantResults The grant results for the corresponding permissions
-     *                     which is either {@link PackageManager#PERMISSION_GRANTED}
-     *                     or {@link PackageManager#PERMISSION_DENIED}. Never null.
-     * @see #requestPermissions(String[], int)
-     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode != RC_HANDLE_CAMERA_PERM) {
@@ -445,7 +483,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     private class GraphicFaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
         public Tracker<Face> create(Face face) {
-            return new GraphicFaceTracker(mGraphicOverlay, mRefActivity, getApplicationContext(), canvasTextRenderer, mUtils);
+            GraphicFaceTracker graphicFaceTracker = new GraphicFaceTracker(mGraphicOverlay, mRefActivity, getApplicationContext(), emotionModelArrayList, mUtils);
+            emotionSelectListener = graphicFaceTracker;
+            return graphicFaceTracker;
         }
     }
 
@@ -500,6 +540,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
 
     @Override
     public void onRendered() {
-        canvasTextRenderer.setRenderCompleted();
+//        objRender.setRenderCompleted();
     }
 }
