@@ -2,6 +2,7 @@ package oska.joyiochat.rajawali;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 
 import org.rajawali3d.Object3D;
 import org.rajawali3d.cameras.Camera;
@@ -45,7 +46,7 @@ public class TearObjectRender extends MovableObjectRenderer {
         initLighting();
         camera.setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS);
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager, R.raw.cry_obj);
+                mTextureManager, R.raw.cry2_obj);
 
         try {
             objParser.parse();
@@ -61,18 +62,29 @@ public class TearObjectRender extends MovableObjectRenderer {
         tearMaterial.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
         tearMaterial.enableLighting(true);
         try {
-            tearMaterial.addTexture(new Texture("tear", R.drawable.tear_material));
+            tearMaterial.addTexture(new Texture("tear", R.drawable.crytexture));
         } catch (ATexture.TextureException e) {
             e.printStackTrace();
         }
         tearMaterial.setColorInfluence(0);
 //
         mObjectGroup.getChildAt(0).setMaterial(tearMaterial);
-        mObjectGroup.setScale(3);
+        mObjectGroup.getChildAt(1).setMaterial(tearMaterial);
+
+        Log.d("oska123", "texture number " + mObjectGroup.getNumChildren() );
+        for(int i = 0 ; i< mObjectGroup.getNumChildren(); i++){
+            mObjectGroup.getChildAt(i);
+        }
+//        mObjectGroup.setScale(3);
         renderListener.onRendered();
 
-        initObj();
+        initObj(8,-5,0,5);
+        setChildOffsetPosX(RajawaliUtils.TEAR_OBJ_OFFSET_X);
+        setChildOffsetPosY(RajawaliUtils.TEAR_OBJ_OFFSET_Y);
+
+//        setObjectPostionX(6);
         setupLighting();
+
         renderListener.onRendered();
         setRenderCompleted();
 

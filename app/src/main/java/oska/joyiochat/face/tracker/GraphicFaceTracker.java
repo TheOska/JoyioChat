@@ -64,10 +64,17 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
             eyesLeftOpenRate = eyeLeft;
         }
 
+        /**
+         * faceX,Y is from the green box top RIGHT position
+         *
+         * however, the mirror should be reflect to top LEFT position
+         * */
         @Override
         public void onFaceXYChanged(float x, float y) {
             faceX = x;
             faceY = y;
+
+
         }
 
         @Override
@@ -154,9 +161,7 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
                 renderObject();
                 lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
             }
-            masterRenderer.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
-                    faceY+ RajawaliUtils.glassObjOffsetY,
-                    rotationY);
+            masterRenderer.moveSelectedObject(faceX, faceY, rotationY);
             masterRenderer.zoomInOutObj(-faceZ);
         }
 
@@ -185,8 +190,8 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
                 renderObject();
                 lastEmotionIndex = MobileVisionUtils.EMOTION_INDEX_SMILE;
             }
-            masterRenderer.moveSelectedObject(faceX+ RajawaliUtils.glassObjOffsetX ,
-                    faceY+ RajawaliUtils.glassObjOffsetY,
+            masterRenderer.moveSelectedObject(faceX ,
+                    faceY,
                     rotationY);
         }
 
@@ -219,6 +224,8 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
 
                 masterRenderer.startRendObj();
                 masterRenderer.startRendObj();
+
+                RajawaliUtils.changable(activity);
             }
         });
     }

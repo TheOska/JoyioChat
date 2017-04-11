@@ -57,14 +57,25 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
     private final String TAG = "MovableObjectRenderer";
     private boolean renderCompleted;
 
+    private float childOffsetX = 0;
+    private float childOffsetY = 0;
+    private float childOffsetZ = 0;
+
+    /**
+     * Fixed position around
+     * X : center of two eyes
+     * Y : eyes position
+     * all movable positon are starting from that index
+     * */
+    private final int CENTER_POSITION_X = 3;
+    private final int HEAD_POSITION_Y = 3;
+    private final int CENTER_PROJECTION_Z = 16;
 
     public MovableObjectRenderer(Context context) {
         super(context);
         this.context = context;
         setFrameRate(45);
         this.renderListener = (RenderListener)context;
-
-
     }
 
     public MovableObjectRenderer(Context context, Object3D mObjectGroup ) {
@@ -75,7 +86,7 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
         this.mObjectGroup = mObjectGroup;
     }
 
-    protected  void initLighting(){
+    protected void initLighting(){
         mLight = new PointLight();
         mLight.setPosition(0, 0, 4);
         mLight.setPower(3);
@@ -84,6 +95,7 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
         getCurrentScene().addLight(mLight);
     }
     protected void setupLighting() {
+
         mLightAnim = new EllipticalOrbitAnimation3D(new Vector3(),
                 new Vector3(0, 10, 0), Vector3.getAxisVector(Vector3.Axis.Z), 0,
                 360, EllipticalOrbitAnimation3D.OrbitDirection.CLOCKWISE);
@@ -91,15 +103,33 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
         mLightAnim.setDurationMilliseconds(3000);
         mLightAnim.setRepeatMode(Animation.RepeatMode.INFINITE);
         mLightAnim.setTransformable3D(mLight);
-
         getCurrentScene().registerAnimation(mLightAnim);
+
         mLightAnim.play();
-
-
-
     }
 
+    protected void setScale(float scaleAmount){
+        if(mObjectGroup != null)
+            mObjectGroup.setScale(scaleAmount);
+    }
+    protected void setChildOffsetPosX(float offsetX){
+        if(mObjectGroup != null){
+            Log.d("oska123", "setChildOffsetPosX called");
+            Log.d("oska123","in the setChildOffsetPox 's offsetX " + offsetX);
+            childOffsetX = offsetX;
+            Log.d("oska123","in the setChildOffsetPox 's childOffsetX " + childOffsetX);
 
+        }
+    }
+    protected void setChildOffsetPosY(float offsetY){
+        if(mObjectGroup != null){
+            childOffsetY = offsetY;
+        }
+    }
+    protected void setChildOffsetPosZ(float offsetZ){
+        if(mObjectGroup != null)
+            childOffsetZ = offsetZ;
+    }
     @Override
     public void onTouchEvent(MotionEvent event){
     }
@@ -157,10 +187,21 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
 
     }
 
-    protected void initObj(){
+    protected void initObj(int posX, int posY, int posZ, float scale){
         mObjectGroup = getObject3D();
         mPicker.registerObject(mObjectGroup);
         mObjectGroup.setDrawingMode(GLES20.GL_TRIANGLES);
+        mObjectGroup.setPosition(posX, posY, posZ);
+        mObjectGroup.setScale(scale);
+    }
+    protected void setObjRotationX(int degree){
+        mObjectGroup.setRotX(degree);
+    }
+    protected void setObjRotationY(int degree){
+        mObjectGroup.setRotY(degree);
+    }
+    protected void setObjRotationZ(int degree){
+        mObjectGroup.setRotZ(degree);
     }
     /**
      * After gluUnProject the 3D Object:
@@ -174,8 +215,13 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
         if( mObjectGroup == null) {
             Log.d(TAG, "mObjectGroup is null AGAIN!!!!!" );
             return;
-
         }
+
+        Log.d("oska123", "ROSE_OBJ_OFFSET_Y " + RajawaliUtils.ROSE_OBJ_OFFSET_Y );
+        x += childOffsetX;
+        y += RajawaliUtils.ROSE_OBJ_OFFSET_Y;
+
+
         GLU.gluUnProject(x, getViewportHeight() - y, 0, mViewMatrix.getDoubleValues(), 0,
                 mProjectionMatrix.getDoubleValues(), 0, mViewport, 0, mNearPos4, 0);
 
@@ -208,23 +254,27 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
     public void setRenderCompleted(){
         renderCompleted = true;
     }
-    public void  startRendObj(){
+
+    public void startRendObj(){
         if(renderCompleted == true) {
             Log.d("oska", "startRendObj");
             getCurrentScene().addChild(mObjectGroup);
         }
     }
 
+    public void setObjectPostionX(float postionX){
+        mObjectGroup.setX(postionX);
+    }
 
     public void stopMovingSelectedObject() {
 //        mObjectGroup = null;
     }
 
     public void zoomInOutObj(float z){
-//        Log.d("zoomInOutObj", "z face index is " + z);
         z = z/ 1.5f;
 //        getCamera().setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS - z);
     }
     public abstract Object3D getObject3D();
+
     public abstract Camera getCamera();
 }

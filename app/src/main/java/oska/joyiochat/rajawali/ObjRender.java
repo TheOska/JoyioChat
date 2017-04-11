@@ -90,7 +90,6 @@ public class ObjRender extends MovableObjectRenderer {
         try {
             objParser.parse();
             mObjectGroup = objParser.getParsedObject();
-            mObjectGroup.setScale(0.35f);
 //            mObjectGroup.setMaterial(material);
 
         } catch (ParsingException e) {
@@ -124,7 +123,11 @@ public class ObjRender extends MovableObjectRenderer {
         mObjectGroup.getChildAt(0).setMaterial(sunGlassesMat1);
         mObjectGroup.getChildAt(1).setMaterial(sunGlassesMat2);
 
-        initObj();
+        initObj(0,0,0,0.35f);
+
+        setChildOffsetPosX(RajawaliUtils.GLASSES_OBJ_OFFSET_X);
+        setChildOffsetPosY(RajawaliUtils.GLASSES_OBJ_OFFSET_Y);
+
         setupLighting();
         renderListener.onRendered();
         setRenderCompleted();

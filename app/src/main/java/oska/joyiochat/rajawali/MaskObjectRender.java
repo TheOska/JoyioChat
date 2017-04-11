@@ -46,6 +46,7 @@ public class MaskObjectRender extends MovableObjectRenderer {
     private final String TAG = "ObjRender";
     private boolean renderCompleted;
 
+
     public MaskObjectRender(Context context) {
         super(context);
         this.context = context;
@@ -62,7 +63,7 @@ public class MaskObjectRender extends MovableObjectRenderer {
         initLighting();
         camera.setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS);
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager, R.raw.themask_resize);
+                mTextureManager, R.raw.themask_o2_obj);
 
         try {
             objParser.parse();
@@ -78,17 +79,17 @@ public class MaskObjectRender extends MovableObjectRenderer {
         maskMaterial.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
         maskMaterial.enableLighting(true);
         try {
-            maskMaterial.addTexture(new Texture("earthDiffuseTex", R.drawable.earth_diffuse));
+            maskMaterial.addTexture(new Texture("earthDiffuseTex", R.drawable.root_texture));
         } catch (ATexture.TextureException e) {
             e.printStackTrace();
         }
-//        maskMaterial.setColorInfluence(0);
+        maskMaterial.setColorInfluence(0);
 //
-//        mObjectGroup.getChildAt(0).setMaterial(maskMaterial);
+        mObjectGroup.getChildAt(0).setMaterial(maskMaterial);
 
         renderListener.onRendered();
 
-        initObj();
+        initObj(0,0,0,1);
         setupLighting();
         renderListener.onRendered();
         setRenderCompleted();

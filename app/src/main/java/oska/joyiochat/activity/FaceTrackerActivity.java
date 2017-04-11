@@ -54,7 +54,6 @@ import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
-import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.multi.CompositeMultiplePermissionsListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.karumi.dexter.listener.multi.SnackbarOnAnyDeniedMultiplePermissionsListener;
@@ -64,7 +63,6 @@ import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.SurfaceView;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -72,12 +70,10 @@ import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import oska.joyiochat.R;
 import oska.joyiochat.adapter.EmotionListAdapter;
 import oska.joyiochat.eventbus.BusStation;
 import oska.joyiochat.eventbus.CaptureMessage;
-import oska.joyiochat.eventbus.EmotionSelectMessage;
 import oska.joyiochat.eventbus.JoyioVideoMessage;
 import oska.joyiochat.face.tracker.GraphicFaceTracker;
 import oska.joyiochat.listener.EmotionSelectListener;
@@ -89,12 +85,15 @@ import oska.joyiochat.permission.FaceTrackingMultiplePermissionListener;
 import oska.joyiochat.permission.PermissionErrorListener;
 import oska.joyiochat.permission.PermissionHelper;
 import oska.joyiochat.rajawali.CanvasTextRenderer;
+import oska.joyiochat.rajawali.DiceObjectRenderer;
 import oska.joyiochat.rajawali.MaskObjectRender;
 import oska.joyiochat.rajawali.ObjRender;
+import oska.joyiochat.rajawali.RoseObjectRenderer;
+import oska.joyiochat.rajawali.TearObjectRender;
 import oska.joyiochat.recording.CaptureHelper;
-import oska.joyiochat.recording.LetterRecordActivity;
 import oska.joyiochat.recording.TelecineService;
 import oska.joyiochat.utils.EmotionModelIndex;
+import oska.joyiochat.rajawali.PokemonBallObjRenderer;
 import oska.joyiochat.utils.Utils;
 import oska.joyiochat.views.CameraSourcePreview;
 import oska.joyiochat.views.GraphicOverlay;
@@ -133,6 +132,11 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     private static final float LOWEST_FPS = 24.0f;
     private EmotionSelectListener emotionSelectListener;
     private ArrayList<EmotionModel> emotionModelArrayList;
+
+    public int specOffsetX;
+    public int specOffsetY;
+    public int specOffsetZ;
+
     private boolean startedCapturing;
     private Utils mUtils;
     private Activity mRefActivity;
@@ -185,6 +189,22 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
         EmotionModel model4 = new EmotionModel(EmotionModelIndex.MASK_MODEL,
                 "mask", R.drawable.mask_icon, false);
         emotionModelArrayList.add(model4);
+
+        EmotionModel model5 = new EmotionModel(EmotionModelIndex.TEAR_MODEL,
+                "tear", R.drawable.tear_icon, false);
+        emotionModelArrayList.add(model5);
+
+        EmotionModel model6 = new EmotionModel(EmotionModelIndex.POKEMON_MODEL,
+                "pokemon ball", R.drawable.pokeball_icon, false);
+        emotionModelArrayList.add(model6);
+
+        EmotionModel model7 = new EmotionModel(EmotionModelIndex.ROSE_MODEL,
+                "pokemon ball", R.drawable.rose_icon, false);
+        emotionModelArrayList.add(model7);
+
+        EmotionModel model8 = new EmotionModel(EmotionModelIndex.DICE_MODEL,
+                "pokemon ball", R.drawable.dice_icon, false);
+        emotionModelArrayList.add(model8);
 
     }
 
@@ -277,7 +297,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     }
 
     private void initRecyclerView() {
-        EmotionListAdapter emotionListAdapter = new EmotionListAdapter(this, emotionModelArrayList);
+        final EmotionListAdapter emotionListAdapter = new EmotionListAdapter(this, emotionModelArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         rvEmotion.setLayoutManager(layoutManager);
         rvEmotion.setAdapter(emotionListAdapter);
@@ -312,6 +332,24 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
 
                         case EmotionModelIndex.MASK_MODEL:
                             newRenderer = new MaskObjectRender(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+
+                        case  EmotionModelIndex.TEAR_MODEL:
+                            newRenderer = new TearObjectRender(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case EmotionModelIndex.POKEMON_MODEL:
+                            newRenderer = new PokemonBallObjRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case  EmotionModelIndex.ROSE_MODEL:
+                            newRenderer = new RoseObjectRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+
+                        case EmotionModelIndex.DICE_MODEL:
+                            newRenderer = new DiceObjectRenderer(activity);
                             emotionModelArrayList.get(position).setObjRenderer(newRenderer);
                             break;
 
