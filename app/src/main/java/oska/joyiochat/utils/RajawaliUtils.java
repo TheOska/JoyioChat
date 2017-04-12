@@ -28,9 +28,14 @@ public class RajawaliUtils {
     public static  int TEAR_OBJ_OFFSET_X = -260;
     public static  int TEAR_OBJ_OFFSET_Y = 300;
 
-    public static int ROSE_OBJ_OFFSET_X = 0;
-    public static int ROSE_OBJ_OFFSET_Y = 450;
+    public static int ROSE_OBJ_OFFSET_X = -400;
+    public static int ROSE_OBJ_OFFSET_Y = 700;
+    public static int ROSE_ROT_Y = 180;
+    public static int ROSE_ROT_Z = 180;
 
+
+    public static int ROX_X = 0;
+    // measure the object position
     public static void changable(final Activity activity){
 
         AsyncTask.execute(new Runnable() {
@@ -47,25 +52,28 @@ public class RajawaliUtils {
             }
         });
 
-//
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    Thread.sleep(500);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                activity.runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        TEAR_OBJ_OFFSET_X -= 10;
-//                        Log.d("oska123", "current Tear X " + TEAR_OBJ_OFFSET_X);
-//                    }
-//                });
-//            }
-//        }).start();
+
+
+
+    }
+
+    public static void changableRot(final Activity activity){
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 50; i++) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    ROX_X += 10;
+                }
+            }
+        });
+
+
 
 
     }

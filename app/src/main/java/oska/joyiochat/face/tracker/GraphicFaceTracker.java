@@ -43,7 +43,7 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     private FaceTrackerActivity activity;
     private Context context;
     private MovableObjectRenderer masterRenderer;
-    private boolean isMovable;
+    private boolean isMovable, isFirstRunObj;
     private int selectedModelIndex;
     private Utils mUtils;
     private int lastEmotionIndex, lastEyeOpenIndex;
@@ -87,20 +87,6 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
             faceZ = z;
         }
     };
-    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity,  Context context, ObjRender objRender, Utils utils) {
-        mOverlay = overlay;
-        mUtils = utils;
-        mFaceGraphic = new FaceGraphic(overlay, activity, mUtils, faceInfoDetectListener);
-        this.activity = (FaceTrackerActivity)activity;
-        this.context = context;
-        lastEmotionIndex = -1;
-        timeLocked =false;
-
-
-        Log.d("mUtils", "x :" +mUtils.getScreenWidth());
-        Log.d("mUtils", "y :" +mUtils.getScreenWidth());
-    }
-
     public GraphicFaceTracker(GraphicOverlay overlay, Activity activity, Context context, ArrayList<EmotionModel> emotionModelArrayList, Utils utils) {
         mOverlay = overlay;
         mUtils = utils;
@@ -110,6 +96,8 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
         lastEmotionIndex = -1;
         timeLocked =false;
         this.emotionModelArrayList = emotionModelArrayList;
+        lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_CLOSE;
+        isFirstRunObj = false;
     }
 
 
@@ -141,6 +129,7 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     @Override
     public void onSelected(int selectedIndex) {
         selectedModelIndex = selectedIndex;
+        isFirstRunObj = false;
         if (emotionModelArrayList.get(selectedModelIndex).getObjRenderer() instanceof MovableObjectRenderer){
             masterRenderer = (MovableObjectRenderer) emotionModelArrayList.get(selectedModelIndex).getObjRenderer();
             isMovable = true;
@@ -162,8 +151,15 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
                 lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
             }
             masterRenderer.moveSelectedObject(faceX, faceY, rotationY);
-            masterRenderer.zoomInOutObj(-faceZ);
+            return;
+//            masterRenderer.zoomInOutObj(-faceZ);
+        }else if(isFirstRunObj == false && masterRenderer.getRenderCompleted() == true){
+            Log.d("oska123", "checkEyeOpenCondition 's getRenderCompleter is true");
+            isFirstRunObj = true;
+            renderObject();
+            lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
         }
+
 
         if(eyesLeftOpenRate < MobileVisionUtils.THRESHOLD_EYE_LEFT_CLOSE && lastEyeOpenIndex == MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN){
 
@@ -217,15 +213,18 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
 
 
     public void renderObject(){
+//        remove3D();
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Log.d("oska" , "renderGlass run");
 
                 masterRenderer.startRendObj();
-                masterRenderer.startRendObj();
+//                masterRenderer.startRendObj();
 
-                RajawaliUtils.changable(activity);
+//                RajawaliUtils.changable(activity);
+//                RajawaliUtils.changableRot(activity);
+
             }
         });
     }

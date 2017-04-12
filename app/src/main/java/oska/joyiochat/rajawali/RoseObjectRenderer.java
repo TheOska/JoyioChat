@@ -46,7 +46,7 @@ public class RoseObjectRenderer extends MovableObjectRenderer {
         initLighting();
         camera.setZ(RajawaliUtils.DEFAULT_CAMERA_Z_POS);
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager, R.raw.rose_tri_resized2_obj);
+                mTextureManager, R.raw.rose_resize2_obj);
 
         try {
             objParser.parse();
@@ -75,9 +75,9 @@ public class RoseObjectRenderer extends MovableObjectRenderer {
         root.enableLighting(true);
 
         try {
-            rose.addTexture(new Texture("rose", R.drawable.rose));
-            leave.addTexture(new Texture("leave", R.drawable.leave));
-            root.addTexture(new Texture("root", R.drawable.root));
+            rose.addTexture(new Texture("rose", R.drawable.rose_resize));
+            leave.addTexture(new Texture("leave", R.drawable.leave_resize));
+            root.addTexture(new Texture("root", R.drawable.root_resize));
         } catch (ATexture.TextureException e) {
             e.printStackTrace();
         }
@@ -87,7 +87,7 @@ public class RoseObjectRenderer extends MovableObjectRenderer {
 
         mObjectGroup.getChildByName("Mesh").setMaterial(rose);
         mObjectGroup.getChildByName("pCube1").setMaterial(leave);
-//        mObjectGroup.getChildByName("pCube2").setMaterial(leave);
+        mObjectGroup.getChildByName("pCube2").setMaterial(leave);
         mObjectGroup.getChildByName("pCube3").setMaterial(leave);
         mObjectGroup.getChildByName("pCylinder1").setMaterial(root);
         for(int i = 0;i<mObjectGroup.getNumChildren() ; i++){
@@ -96,14 +96,19 @@ public class RoseObjectRenderer extends MovableObjectRenderer {
 
 
 
-        initObj(8,10,0,1.2f);
-//        setObjRotationY(90);
-        setChildOffsetPosX(RajawaliUtils.TEAR_OBJ_OFFSET_X);
-        setChildOffsetPosY(RajawaliUtils.TEAR_OBJ_OFFSET_Y);
+        initObj(8,10,0,2f);
 
+        // rotation X face font rotation
+
+//        setObjRotationX(90);
+        setObjRotationY(180);
+        setObjRotationZ(90);
+
+        setChildOffsetPosX(RajawaliUtils.ROSE_OBJ_OFFSET_X);
+        setChildOffsetPosY(RajawaliUtils.ROSE_OBJ_OFFSET_Y);
+        setisInteracableObj();
 //        setObjectPostionX(6);
         setupLighting();
-
         renderListener.onRendered();
         setRenderCompleted();
 

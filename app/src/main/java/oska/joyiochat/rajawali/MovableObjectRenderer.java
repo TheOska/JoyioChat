@@ -56,7 +56,8 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
     private RenderListener renderListener;
     private final String TAG = "MovableObjectRenderer";
     private boolean renderCompleted;
-
+    private boolean isInteractiveObj;
+    private boolean isFirstRunObj;
     private float childOffsetX = 0;
     private float childOffsetY = 0;
     private float childOffsetZ = 0;
@@ -76,6 +77,7 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
         this.context = context;
         setFrameRate(45);
         this.renderListener = (RenderListener)context;
+        isInteractiveObj = false;
     }
 
     public MovableObjectRenderer(Context context, Object3D mObjectGroup ) {
@@ -213,13 +215,13 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
             mObjectGroup = getObject3D();
         }
         if( mObjectGroup == null) {
-            Log.d(TAG, "mObjectGroup is null AGAIN!!!!!" );
+            Log.d(TAG, "mObjectGroup is null AGAIN!!!!! " + renderCompleted );
             return;
         }
 
-        Log.d("oska123", "ROSE_OBJ_OFFSET_Y " + RajawaliUtils.ROSE_OBJ_OFFSET_Y );
+//        Log.d("oska123", "ROSE_OBJ_OFFSET_Y " + RajawaliUtils.ROSE_OBJ_OFFSET_Y );
         x += childOffsetX;
-        y += RajawaliUtils.ROSE_OBJ_OFFSET_Y;
+        y += childOffsetY;
 
 
         GLU.gluUnProject(x, getViewportHeight() - y, 0, mViewMatrix.getDoubleValues(), 0,
@@ -243,7 +245,11 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
         mNewObjPos.add(mNearPos);
         mObjectGroup.setX(mNewObjPos.x);
         mObjectGroup.setY(mNewObjPos.y);
-        mObjectGroup.setRotY(180+rotationY*1.5);
+        if(isInteractiveObj == false)
+            mObjectGroup.setRotY(180+rotationY*1.5);
+        else
+            mObjectGroup.setRotation(new Vector3(mNewObjPos.x, mNewObjPos.y, mObjectGroup.getZ()), 180);
+
 
     }
 
@@ -254,12 +260,17 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
     public void setRenderCompleted(){
         renderCompleted = true;
     }
-
+    public boolean getRenderCompleted(){
+        return renderCompleted;
+    }
     public void startRendObj(){
         if(renderCompleted == true) {
             Log.d("oska", "startRendObj");
             getCurrentScene().addChild(mObjectGroup);
         }
+    }
+    public void setisInteracableObj(){
+        isInteractiveObj = true;
     }
 
     public void setObjectPostionX(float postionX){
