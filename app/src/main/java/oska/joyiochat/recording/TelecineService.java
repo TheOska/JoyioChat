@@ -117,7 +117,8 @@ public final class TelecineService extends Service {
     Log.d("oska","receive bus message");
     if(message.getMsg().toString().equals("stop")){
       recordingSession.stopRecording();
-      BusStation.getBus().post(new JoyioVideoMessage(recordingSession.getOutPutFileName()));
+      BusStation.getBus().post(new JoyioVideoMessage(recordingSession.getOutPutFileName(),
+              recordingSession.getOutPutAudioFileName()));
 
     }
   }  @Override

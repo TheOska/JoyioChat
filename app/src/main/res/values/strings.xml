@@ -42,6 +42,8 @@
     <string name="joyiochat_camera">JoyioChat Camera</string>
     <string name="image_gallery">From Image Gallery</string>
     <string name="video_gallery">From Video Gallery</string>
+    <string name="progress_dialog">Preparing the video</string>
+    <string name="please_wait">Please wait...</string>
 
     <array name="countdown">
         <item>@string/countdown_three</item>

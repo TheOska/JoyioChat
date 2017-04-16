@@ -138,7 +138,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     private static final float LOWEST_FPS = 24.0f;
     private EmotionSelectListener emotionSelectListener;
     private ArrayList<EmotionModel> emotionModelArrayList;
-
     public int specOffsetX;
     public int specOffsetY;
     public int specOffsetZ;
@@ -312,8 +311,14 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
             CaptureHelper.fireScreenCaptureIntent(this);
             startedCapturing = true;
         } else {
-            ivCaptureVideo.setImageDrawable(getResources().getDrawable(R.drawable.ic_camera_white_36dp));
-            BusStation.getBus().post(new CaptureMessage("stop"));
+//            ivCaptureVideo.setImageDrawable(getResources().getDrawable(R.drawable.ic_camera_white_36dp));
+            try {
+                CaptureMessage captureMessage = new CaptureMessage("stop");
+                BusStation.getBus().post(captureMessage);
+            } catch (Exception e) {
+                e.printStackTrace();
+
+            }
         }
 
     }
@@ -324,6 +329,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
         Intent intent = new Intent();
         String dir = Environment.getExternalStoragePublicDirectory(DIRECTORY_MOVIES) + "/JoyioChat/";
         intent.putExtra("videoName", joyioVideoMessage.getVideoName());
+        intent.putExtra("audioName", joyioVideoMessage.getAudioName());
+
         intent.putExtra(ChatRoomDetailActivity.JOYIOMESSAGE_FILE_NAME, dir + joyioVideoMessage.getVideoName());
         setResult(RESULT_OK, intent);
         finish();

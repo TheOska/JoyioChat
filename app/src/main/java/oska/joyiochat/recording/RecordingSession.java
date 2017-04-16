@@ -89,20 +89,22 @@ final class RecordingSession {
   private final File outputRoot;
   private final DateFormat fileFormat =
       new SimpleDateFormat("'JoyioChat_'yyyy-MM-dd-HH-mm-ss'.mp4'", Locale.US);
+  private final DateFormat fileAudioFormat =
+          new SimpleDateFormat("'JoyioChat_'yyyy-MM-dd-HH-mm-ss'.aac'", Locale.US);
 
   private final NotificationManager notificationManager;
   private final WindowManager windowManager;
   private final MediaProjectionManager projectionManager;
 
   private OverlayView overlayView;
-  private MediaRecorder recorder;
+  private MediaRecorder recorder, audioRecorder;
   private MediaProjection projection;
   private VirtualDisplay display;
-  private String outputFile;
+  private String outputFile, outputFileAudio;
   private boolean running;
   private long recordingStartNanos;
   private Activity activity;
-  private String outPutFileName;
+  private String outPutFileName, outputFileAudioName;
   RecordingSession(Context context, Listener listener, int resultCode, Intent data,
                    Provider<Boolean> showCountDown, Provider<Integer> videoSizePercentage, Activity activity) {
 
@@ -207,7 +209,9 @@ final class RecordingSession {
 
     RecordingInfo recordingInfo = getRecordingInfo();
 
+
     recorder = new MediaRecorder();
+    audioRecorder = new MediaRecorder();
     recorder.setVideoSource(SURFACE);
     recorder.setOutputFormat(MPEG_4);
     recorder.setVideoFrameRate(recordingInfo.frameRate);
@@ -215,13 +219,28 @@ final class RecordingSession {
     recorder.setVideoSize(recordingInfo.width, recordingInfo.height);
     recorder.setVideoEncodingBitRate(8 * 1000 * 1000);
 
+
+    audioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+    audioRecorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS);
+    audioRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+//    audioRecorder.setAudioEncoder(MediaRecorder.getAudioSourceMax());
+    audioRecorder.setAudioEncodingBitRate(16);
+    audioRecorder.setAudioSamplingRate(96000);
+
     String outputName = fileFormat.format(new Date());
+    String outputAudioName = fileAudioFormat.format(new Date());
     outPutFileName = outputName;
+    outputFileAudioName = outputAudioName;
     outputFile = new File(outputRoot, outputName).getAbsolutePath();
+    outputFileAudio = new File(outputRoot, outputAudioName).getAbsolutePath();
+
     recorder.setOutputFile(outputFile);
+    audioRecorder.setOutputFile(outputFileAudio);
+
 
     try {
       recorder.prepare();
+      audioRecorder.prepare();
     } catch (IOException e) {
       throw new RuntimeException("Unable to prepare MediaRecorder.", e);
     }
@@ -234,6 +253,7 @@ final class RecordingSession {
             recordingInfo.density, VIRTUAL_DISPLAY_FLAG_PRESENTATION, surface, null, null);
 
     recorder.start();
+    audioRecorder.start();
     running = true;
     recordingStartNanos = System.nanoTime();
     listener.onStart();
@@ -251,6 +271,10 @@ final class RecordingSession {
     return outPutFileName;
   }
 
+  public String getOutPutAudioFileName(){
+    return outputFileAudioName;
+  }
+
   public void stopRecording() {
 
     if (!running) {
@@ -266,7 +290,7 @@ final class RecordingSession {
       projection.stop();
       // Stop the recorder which writes the contents to the file.
       recorder.stop();
-
+      audioRecorder.stop();
       propagate = true;
     } finally {
       try {
@@ -283,12 +307,14 @@ final class RecordingSession {
 
     long recordingStopNanos = System.nanoTime();
 
+    audioRecorder.release();
     recorder.release();
     display.release();
 
 
 
     MediaScannerConnection.scanFile(context, new String[] { outputFile }, null,
+         new MediaScannerConnection.OnScanCompletedListener() {
           @Override
           public void onScanCompleted(String path, final Uri uri) {
             if (uri == null) throw new NullPointerException("uri == null");

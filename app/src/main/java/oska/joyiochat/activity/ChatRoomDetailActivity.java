@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
@@ -83,6 +84,8 @@ import oska.joyiochat.listener.VideoThumbnailListener;
 import oska.joyiochat.module.JoyioChatMessage;
 import oska.joyiochat.permission.PermissionErrorListener;
 import oska.joyiochat.permission.PermissionHelper;
+import oska.joyiochat.recording.AudioVideoMix;
+import oska.joyiochat.recording.AudioVideoMixListener;
 
 import static android.os.Environment.DIRECTORY_MOVIES;
 import static android.os.Environment.DIRECTORY_PICTURES;
@@ -92,7 +95,7 @@ import static android.os.Environment.DIRECTORY_PICTURES;
  */
 
 public class ChatRoomDetailActivity extends AppCompatActivity implements
-        GoogleApiClient.OnConnectionFailedListener, VideoThumbnailListener, DownloadManagerListener{
+        GoogleApiClient.OnConnectionFailedListener, VideoThumbnailListener, DownloadManagerListener {
 
     private static final String TAG = "MainActivity";
     public static final String MESSAGES_CHILD = "messages";
@@ -118,7 +121,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     private Button mSendButton;
     private RecyclerView mMessageRecyclerView;
     private LinearLayoutManager mLinearLayoutManager;
-//    private FirebaseRecyclerAdapter<JoyioChatMessage, MessageViewHolder> mFirebaseAdapter;
+    //    private FirebaseRecyclerAdapter<JoyioChatMessage, MessageViewHolder> mFirebaseAdapter;
     private JoyioChatAdapter joyioChatAdapter;
     private ProgressBar mProgressBar;
     private DatabaseReference mFirebaseDatabaseReference;
@@ -126,7 +129,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     private FirebaseUser mFirebaseUser;
     private EditText mMessageEditText;
     private ImageView mAddMessageImageView;
-//    private FirebaseRemoteConfig mFirebaseRemoteConfig;
+    //    private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private GoogleApiClient mGoogleApiClient;
     private RelativeLayout relativeLayout;
     private Realm realm;
@@ -140,7 +143,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_chatroom_detail);
         relativeLayout = (RelativeLayout) findViewById(R.id.rl_root);
         selectedVideoName = "";
-        fileFullPath= "";
+        fileFullPath = "";
         checkPermission();
         initDownloadManger();
         getUserInfo();
@@ -150,14 +153,14 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
 
     private void initDownloadManger() {
         downloadManagerPro = new DownloadManagerPro(this.getApplicationContext());
-        downloadManagerPro.init("Movies/JoyioChat/", 3,this);
+        downloadManagerPro.init("Movies/JoyioChat/", 3, this);
     }
 
     private void checkPermission() {
         PermissionHelper ph = new PermissionHelper();
         MultiplePermissionsListener mpl = ph.factoryMultiPermissionListener(relativeLayout);
         PermissionErrorListener pel = new PermissionErrorListener();
-        ph.checkAll(this,mpl, pel);
+        ph.checkAll(this, mpl, pel);
 
     }
 
@@ -189,7 +192,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     private void initChatRoomMsg() {
         Realm.init(this);
         RealmConfiguration config = new RealmConfiguration.Builder()
-                                        .build();
+                .build();
         realm = Realm.getInstance(config);
 
 
@@ -200,7 +203,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         Query query = mFirebaseDatabaseReference.child(MESSAGES_CHILD);
         updateRealm(query);
-        joyioChatAdapter = new JoyioChatAdapter( mFirebaseDatabaseReference.child(MESSAGES_CHILD), this, mProgressBar, realm,downloadManagerPro);
+        joyioChatAdapter = new JoyioChatAdapter(mFirebaseDatabaseReference.child(MESSAGES_CHILD), this, mProgressBar, realm, downloadManagerPro);
         joyioChatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
@@ -226,12 +229,12 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
                     for (DataSnapshot issue : dataSnapshot.getChildren()) {
-                        if(issue.hasChild("videoUrl")){
+                        if (issue.hasChild("videoUrl")) {
 
                             VideoModel videoModel = realm.where(VideoModel.class).equalTo("videoUrl", issue.child("videoUrl").getValue().toString()).findFirst();
-                            if(videoModel == null) { // don't have this record, than insert
+                            if (videoModel == null) { // don't have this record, than insert
 //                                Log.d("oska123" , "missed video url " +videoModel.getVideoUrl());
                                 insertToDB(issue.child("videoUrl").getValue().toString());
 
@@ -284,10 +287,10 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                                 intent.addCategory(Intent.CATEGORY_OPENABLE);
 
-                                switch (position){
+                                switch (position) {
                                     case 0:
                                         selectedType = EXTRA_JOYIOCHAT;
-                                        startActivityForResult(new Intent(ChatRoomDetailActivity.this,FaceTrackerActivity.class),JOYIOCHAT_REQUEST_CODE);
+                                        startActivityForResult(new Intent(ChatRoomDetailActivity.this, FaceTrackerActivity.class), JOYIOCHAT_REQUEST_CODE);
                                         break;
                                     case 1:
                                         intent.setType("image/*");
@@ -334,19 +337,19 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_MEDIA) {
             if (resultCode == RESULT_OK) {
                 if (data != null) {
-                    Log.d("selected" , selectedType +"");
+                    Log.d("selected", selectedType + "");
                     final Uri uri = data.getData();
-                    if(selectedType == EXTRA_VIDEO) {
+                    if (selectedType == EXTRA_VIDEO) {
                         Uri videoThumbnailUri = saveThumbnailBitmap("temp", uri);
                         this.onVideoThumbnailComplete(uri, videoThumbnailUri);
 
-                    }else if(selectedType == EXTRA_IMAGE){
+                    } else if (selectedType == EXTRA_IMAGE) {
 
 
                         JoyioChatMessage tempMessage = new JoyioChatMessage(null, mUsername, mPhotoUrl,
@@ -363,7 +366,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                                                             .getReference(mFirebaseUser.getUid())
                                                             .child(key)
                                                             .child(uri.getLastPathSegment());
-                                            putImageInStorage(storageReference,uri, key);
+                                            putImageInStorage(storageReference, uri, key);
 
                                         } else {
                                             Log.w(TAG, "Unable to write message to database.",
@@ -371,8 +374,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                                         }
                                     }
                                 });
-                    }else{
-                        Toast.makeText(this,"Something When Wrong", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Something When Wrong", Toast.LENGTH_SHORT).show();
                     }
 
                 }
@@ -395,12 +398,48 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                 // Sending failed or it was canceled, show failure message to the user
                 Log.d(TAG, "Failed to send invitation.");
             }
-        }else if(requestCode == JOYIOCHAT_REQUEST_CODE){
-            String filePath = data.getStringExtra(JOYIOMESSAGE_FILE_NAME);
+        } else if (requestCode == JOYIOCHAT_REQUEST_CODE) {
+            final String filePath;
+            try {
+                filePath = data.getStringExtra(JOYIOMESSAGE_FILE_NAME);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
             selectedVideoName = data.getStringExtra("videoName");
-            fileFullPath = LOCAL_DIR_JOYIOCHAT+LOCAL_FOLDER+data.getStringExtra("videoName");
-            Uri videoThumbnailUri = saveThumbnailBitmapFromJoyioMessage("temp", filePath);
-            this.onVideoThumbnailComplete(Uri.parse(filePath), videoThumbnailUri);
+
+
+            final MaterialDialog materialDialog = new MaterialDialog.Builder(this)
+                    .title(R.string.progress_dialog)
+                    .content(R.string.please_wait)
+                    .progress(true, 0)
+                    .progressIndeterminateStyle(true)
+                    .show();
+
+//
+            AudioVideoMix audioVideoMix = new AudioVideoMix(this,LOCAL_DIR_JOYIOCHAT + LOCAL_FOLDER +data.getStringExtra("audioName"),
+                    LOCAL_DIR_JOYIOCHAT + LOCAL_FOLDER + data.getStringExtra("videoName"),
+                    LOCAL_DIR_JOYIOCHAT + LOCAL_FOLDER + "MIX_"+ data.getStringExtra("videoName"));
+            AudioVideoMixListener avml = new AudioVideoMixListener() {
+                @Override
+                public void onFinishMixing() {
+
+                    Log.d("oska123", "onFinishMixing");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d("oska123", "dismiss dialog");
+                            materialDialog.dismiss();
+                            fileFullPath = LOCAL_DIR_JOYIOCHAT + LOCAL_FOLDER + "MIX_"+ data.getStringExtra("videoName");
+                            Uri videoThumbnailUri = saveThumbnailBitmapFromJoyioMessage("temp", filePath);
+                            onVideoThumbnailComplete(Uri.parse(filePath), videoThumbnailUri);
+                        }
+                    });
+                }
+            };
+            audioVideoMix.merge(avml);
+
+
         }
     }
 
@@ -428,22 +467,22 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
 
     private void putVideoInStorage(final DatabaseReference databaseReference, final StorageReference storageReference, Uri videoUri, final Uri videoThumbnailUri, final String key) {
         final JoyioChatMessage joyioChatMessage = new JoyioChatMessage();
-        if(selectedType == EXTRA_JOYIOCHAT){
+        if (selectedType == EXTRA_JOYIOCHAT) {
             Log.d("oska", "run the extra joyioChat");
-            videoUri = getVideoContentUri(this,new File(videoUri.getPath()));
+            videoUri = getVideoContentUri(this, new File(videoUri.getPath()));
         }
         storageReference.putFile(videoUri).addOnCompleteListener(ChatRoomDetailActivity.this,
                 new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        @SuppressWarnings("VisibleForTests") Uri downloadUrl =  task.getResult().getMetadata().getDownloadUrl();
+                        @SuppressWarnings("VisibleForTests") Uri downloadUrl = task.getResult().getMetadata().getDownloadUrl();
                         if (task.isSuccessful()) {
                             joyioChatMessage.setText(null);
                             joyioChatMessage.setName(mUsername);
                             joyioChatMessage.setPhotoUrl(mPhotoUrl);
                             joyioChatMessage.setVideoUrl(downloadUrl.toString());
                             joyioChatMessage.setImageUrl(null);
-                            uploadVideoThumbnail(videoThumbnailUri, joyioChatMessage , key, downloadUrl.toString());
+                            uploadVideoThumbnail(videoThumbnailUri, joyioChatMessage, key, downloadUrl.toString());
 //                            mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
 //                                    .setValue(joyioChatMessage);
                         } else {
@@ -472,7 +511,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                             mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
                                     .setValue(joyioChatMessage);
                             insertToDB(strDownloadUrl);
-                        }else
+                        } else
                             Log.w(TAG, "thumbnail image upload task was not successful.", task.getException());
                     }
                 });
@@ -485,9 +524,9 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
             public void execute(Realm realm) {
                 Number currentIdNum = realm.where(VideoModel.class).max(VideoModel.TAG_ID);
                 int maxID;
-                if(currentIdNum != null){
-                    maxID = currentIdNum.intValue()+1;
-                }else
+                if (currentIdNum != null) {
+                    maxID = currentIdNum.intValue() + 1;
+                } else
                     maxID = 1;
                 VideoModel videoModel = new VideoModel();
                 videoModel.setId(maxID);
@@ -517,8 +556,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         String root = Environment.getExternalStorageDirectory().toString();
         File myDir = new File(extStorageDirectory);
         myDir.mkdirs();
-        File file = new File (myDir, "temp.jpg");
-        if (file.exists ()) file.delete ();
+        File file = new File(myDir, "temp.jpg");
+        if (file.exists()) file.delete();
         try {
             FileOutputStream out = new FileOutputStream(file);
             videoThumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
@@ -531,7 +570,6 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
             return null;
         }
     }
-
 
 
     private Uri saveThumbnailBitmapFromJoyioMessage(String filename, String fileFullPath) {
@@ -547,8 +585,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         String root = Environment.getExternalStorageDirectory().toString();
         File myDir = new File(extStorageDirectory);
         myDir.mkdirs();
-        File file = new File (myDir, "temp.jpg");
-        if (file.exists ()) file.delete ();
+        File file = new File(myDir, "temp.jpg");
+        if (file.exists()) file.delete();
         try {
             FileOutputStream out = new FileOutputStream(file);
             videoThumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
@@ -562,20 +600,20 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         }
     }
 
-    public String getRealPathFromURI_API19(Uri uri){
+    public String getRealPathFromURI_API19(Uri uri) {
         String filePath = "";
         String wholeID = DocumentsContract.getDocumentId(uri);
 
         // Split at colon, use second item in the array
         String id = wholeID.split(":")[1];
 
-        String[] column = { MediaStore.Video.Media.DATA };
+        String[] column = {MediaStore.Video.Media.DATA};
 
         // where id is equal to
         String sel = MediaStore.Video.Media._ID + "=?";
 
         Cursor cursor = getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                column, sel, new String[]{ id }, null);
+                column, sel, new String[]{id}, null);
 
         int columnIndex = cursor.getColumnIndex(column[0]);
 
@@ -594,8 +632,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onVideoThumbnailComplete(final Uri videoUri,final Uri thumbnailUri) {
-        Log.d("oska123" , "videoUri " + videoUri);
+    public void onVideoThumbnailComplete(final Uri videoUri, final Uri thumbnailUri) {
+        Log.d("oska123", "videoUri " + videoUri);
         // Case that browser data from local
         JoyioChatMessage tempMessage = new JoyioChatMessage(null, mUsername, mPhotoUrl,
                 LOADING_IMAGE_URL);
@@ -612,7 +650,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
                                             .getReference(mFirebaseUser.getUid())
                                             .child(key)
                                             .child(videoUri.getLastPathSegment());
-                            putVideoInStorage(databaseReference,storageReference, videoUri,thumbnailUri, key);
+                            putVideoInStorage(databaseReference, storageReference, videoUri, thumbnailUri, key);
                         } else {
                             Log.w(TAG, "Unable to write message to database.",
                                     databaseError.toException());
@@ -626,9 +664,9 @@ public class ChatRoomDetailActivity extends AppCompatActivity implements
         String filePath = videoFile.getAbsolutePath();
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                new String[] { MediaStore.Video.Media._ID },
+                new String[]{MediaStore.Video.Media._ID},
                 MediaStore.Video.Media.DATA + "=? ",
-                new String[] { filePath }, null);
+                new String[]{filePath}, null);
         if (cursor != null && cursor.moveToFirst()) {
             int id = cursor.getInt(cursor
                     .getColumnIndex(MediaStore.MediaColumns._ID));

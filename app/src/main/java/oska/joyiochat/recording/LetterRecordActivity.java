@@ -228,23 +228,23 @@ public final class LetterRecordActivity extends AppCompatActivity {
 
     @OnClick(R.id.merge)
     void onBtnMergeClicked() {
-        btnMerge.setCompoundDrawables(mWaveDrawable,null , null, null);
-        mWaveDrawable.start();
-        AudioVideoMix audioVideoMix = new AudioVideoMix(this);
-        AudioVideoMixListener avml = new AudioVideoMixListener() {
-            @Override
-            public void onFinishMixing() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mWaveDrawable.stop();
-                        btnMerge.setCompoundDrawables(null, null, null, null);
-                        btnMerge.setText("Finish");
-                    }
-                });
-            }
-        };
-        audioVideoMix.merge(avml);
+//        btnMerge.setCompoundDrawables(mWaveDrawable,null , null, null);
+//        mWaveDrawable.start();
+//        AudioVideoMix audioVideoMix = new AudioVideoMix(this);
+//        AudioVideoMixListener avml = new AudioVideoMixListener() {
+//            @Override
+//            public void onFinishMixing() {
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        mWaveDrawable.stop();
+//                        btnMerge.setCompoundDrawables(null, null, null, null);
+//                        btnMerge.setText("Finish");
+//                    }
+//                });
+//            }
+//        };
+//        audioVideoMix.merge(avml);
     }
 
     @OnItemSelected(R.id.spinner_video_size_percentage)

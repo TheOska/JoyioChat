@@ -38,9 +38,15 @@ public class AudioVideoMix {
     String fadedAcc = "faded.aac";
     String screenShot1 = "screen1.mp4";
 
-    public AudioVideoMix(Context context) {
+    String audioNameFullPath, videoNameFullPath;
+    String outPutNameFullPath;
+
+    public AudioVideoMix(Context context, String audioNameFullPath, String videoNameFullPath, String outPutNameFullPath) {
         this.context = context;
         rawPath = LOCAL_DIR_MOV + LOCAL_FOLDER;
+        this.audioNameFullPath = audioNameFullPath;
+        this.videoNameFullPath = videoNameFullPath;
+        this.outPutNameFullPath = outPutNameFullPath;
     }
 
     public void merge(final AudioVideoMixListener listener) {
@@ -49,17 +55,17 @@ public class AudioVideoMix {
             public void run() {
                 try {
                     // get mp4 file
-                    MediaPlayer mpVideo = MediaPlayer.create(context, Uri.parse(rawPath + screenShot1));
+                    MediaPlayer mpVideo = MediaPlayer.create(context, Uri.parse(videoNameFullPath));
                     int videoDuration = mpVideo.getDuration();
-                    MediaPlayer mpAudio = MediaPlayer.create(context, Uri.parse(rawPath + fadedAcc));
+                    MediaPlayer mpAudio = MediaPlayer.create(context, Uri.parse(audioNameFullPath));
                     int audioDuration = mpAudio.getDuration();
 
-                    AACTrackImpl audioTrack = new AACTrackImpl(new FileDataSourceImpl(rawPath + fadedAcc));
+                    AACTrackImpl audioTrack = new AACTrackImpl(new FileDataSourceImpl(audioNameFullPath));
 //                    int audioDuration = (int) Math.ceil(audioTrack.getSamples().size());
                     Log.d("AudioVideoMix", "video duration " +  videoDuration);
                     Log.d("AudioVideoMix", "audio duration " + audioDuration);
                     // mobile local storage file path
-                    Movie m = MovieCreator.build(rawPath + screenShot1);
+                    Movie m = MovieCreator.build(videoNameFullPath);
                     List<Track> nuTracks = new ArrayList<Track>();
                     // extract all MPEG layer
                     for (Track track : m.getTracks()) {
@@ -94,7 +100,7 @@ public class AudioVideoMix {
                     m.setTracks(nuTracks);
                     BasicContainer out2 = (BasicContainer) new DefaultMp4Builder().build(m);
                     //
-                    FileChannel fc2 = new RandomAccessFile(rawPath + "output8.mp4", "rw").getChannel();
+                    FileChannel fc2 = new RandomAccessFile(outPutNameFullPath, "rw").getChannel();
                     out2.writeContainer(fc2);
                     fc2.close();
                     mpVideo.release();
