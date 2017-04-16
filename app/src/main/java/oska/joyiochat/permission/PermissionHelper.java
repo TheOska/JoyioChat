@@ -28,7 +28,8 @@ public class PermissionHelper {
                         Manifest.permission.SYSTEM_ALERT_WINDOW,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_SETTINGS,
-                        Manifest.permission.INTERNET
+                        Manifest.permission.INTERNET,
+                        Manifest.permission.RECORD_AUDIO
                 )
 
 

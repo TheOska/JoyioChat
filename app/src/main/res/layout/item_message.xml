@@ -63,7 +63,7 @@
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
                     app:indicatorColor="@color/indicator"
-                    app:indicatorName="BallPulseIndicator"
+                    app:indicatorName="BallClipRotateIndicator"
                     />
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/iv_play"

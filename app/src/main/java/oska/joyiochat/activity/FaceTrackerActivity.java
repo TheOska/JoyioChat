@@ -58,6 +58,7 @@ import com.karumi.dexter.listener.multi.CompositeMultiplePermissionsListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.karumi.dexter.listener.multi.SnackbarOnAnyDeniedMultiplePermissionsListener;
 import com.squareup.otto.Subscribe;
+import com.wang.avi.AVLoadingIndicatorView;
 
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.view.ISurface;
@@ -84,8 +85,13 @@ import oska.joyiochat.module.EmotionModel;
 import oska.joyiochat.permission.FaceTrackingMultiplePermissionListener;
 import oska.joyiochat.permission.PermissionErrorListener;
 import oska.joyiochat.permission.PermissionHelper;
+import oska.joyiochat.rajawali.AngerRenderer;
+import oska.joyiochat.rajawali.BirdObjRenderer;
 import oska.joyiochat.rajawali.CanvasTextRenderer;
+import oska.joyiochat.rajawali.CloudObjRenderer;
 import oska.joyiochat.rajawali.DiceObjectRenderer;
+import oska.joyiochat.rajawali.FootballObjectRenderer;
+import oska.joyiochat.rajawali.LikeObjRenderer;
 import oska.joyiochat.rajawali.MaskObjectRender;
 import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.rajawali.RoseObjectRenderer;
@@ -148,6 +154,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     private CanvasTextRenderer canvasTextRenderer;
     private MultiplePermissionsListener allPermissionsListener;
     private Activity activity;
+    private EmotionListAdapter emotionListAdapter;
+    private int selectedModelIndex = -1;
+
     /**
      * Initializes the UI and initiates the creation of a face detector.
      */
@@ -172,8 +181,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
         emotionModelArrayList = new ArrayList<>();
 
         EmotionModel modelSpace = new EmotionModel(0, "null", 0, false);
-        emotionModelArrayList.add(modelSpace);
-        emotionModelArrayList.add(modelSpace);
+//        emotionModelArrayList.add(modelSpace);
+//        emotionModelArrayList.add(modelSpace);
 
         EmotionModel model1 = new EmotionModel(1, "camera", R.drawable.ic_camera_white_36dp, true);
         emotionModelArrayList.add(model1);
@@ -205,6 +214,26 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
         EmotionModel model8 = new EmotionModel(EmotionModelIndex.DICE_MODEL,
                 "pokemon ball", R.drawable.dice_icon, false);
         emotionModelArrayList.add(model8);
+
+        EmotionModel model9 = new EmotionModel(EmotionModelIndex.FOOTBALL_MODEL,
+                "Football", R.drawable.footbal, false);
+        emotionModelArrayList.add(model9);
+
+        EmotionModel model10 = new EmotionModel(EmotionModelIndex.CLOUD_MODEL,
+                "cloud", R.drawable.cloud_icon, false);
+        emotionModelArrayList.add(model10);
+
+        EmotionModel model11 = new EmotionModel(EmotionModelIndex.ANGRY_MODEL,
+                "cloud", R.drawable.angry, false);
+        emotionModelArrayList.add(model11);
+
+        EmotionModel model12 = new EmotionModel(EmotionModelIndex.LIKE_MODEL,
+                "cloud", R.drawable.like_icon, false);
+        emotionModelArrayList.add(model12);
+
+        EmotionModel model13 = new EmotionModel(EmotionModelIndex.BIRD_MODEL,
+                "bird", R.drawable.bird_icon, false);
+        emotionModelArrayList.add(model13);
 
     }
 
@@ -275,6 +304,10 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
 
     public void onClickCapture() {
         if (!startedCapturing) {
+            View itemView = rvEmotion.getChildAt(0);
+            ImageView imageView = (ImageView) itemView.findViewById(R.id.civ_icon);
+            imageView.setImageResource(R.drawable.stop);
+//            ((EmotionListAdapter.EmotionViewHolder)rvEmotion.findViewHolderForAdapterPosition(0)).btnStopRecording();
             ivCaptureVideo.setImageDrawable(getResources().getDrawable(R.drawable.stop));
             CaptureHelper.fireScreenCaptureIntent(this);
             startedCapturing = true;
@@ -297,23 +330,26 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     }
 
     private void initRecyclerView() {
-        final EmotionListAdapter emotionListAdapter = new EmotionListAdapter(this, emotionModelArrayList);
+        emotionListAdapter = new EmotionListAdapter(this, emotionModelArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         rvEmotion.setLayoutManager(layoutManager);
         rvEmotion.setAdapter(emotionListAdapter);
+        rvEmotion.setHasFixedSize(true);
         rvEmotion.addOnItemTouchListener(new GeneralRecyclerViewTouchListener(this, rvEmotion, new GeneralRecyclerViewTouchListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
-                Log.d("oska123", "clicked position " + position);
                 //  minus 2 is for spacing item
-                int selectedModelIndex = position;
-                int realPosition = position - 2;
-
+                selectedModelIndex = position ;
+//                ((EmotionListAdapter.EmotionViewHolder)rvEmotion.findViewHolderForAdapterPosition(position)).startLoading(position);
+                int realPosition = position;
                 if (realPosition == 0) {
-
 
                     onClickCapture();
                 } else {
+
+                    View itemView = rvEmotion.getChildAt(selectedModelIndex % 6);
+                    AVLoadingIndicatorView loadingIndicatorView = (AVLoadingIndicatorView) itemView.findViewById(R.id.loading_view);
+                    loadingIndicatorView.setVisibility(View.VISIBLE);
 
                     mPreview.removeView(surface);
                     surface = new SurfaceView(getApplicationContext());
@@ -352,7 +388,28 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
                             newRenderer = new DiceObjectRenderer(activity);
                             emotionModelArrayList.get(position).setObjRenderer(newRenderer);
                             break;
+                        case EmotionModelIndex.FOOTBALL_MODEL:
+                            newRenderer = new FootballObjectRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
 
+                        case EmotionModelIndex.CLOUD_MODEL:
+                            newRenderer = new CloudObjRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+
+                        case EmotionModelIndex.ANGRY_MODEL:
+                            newRenderer = new AngerRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case EmotionModelIndex.LIKE_MODEL:
+                            newRenderer = new LikeObjRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case EmotionModelIndex.BIRD_MODEL:
+                            newRenderer = new BirdObjRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
                     }
 
                     try {
@@ -366,6 +423,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
 
                     ));
                     emotionSelectListener.onSelected(position);
+
+
+
                 }
 
 
@@ -579,5 +639,17 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
     @Override
     public void onRendered() {
 //        objRender.setRenderCompleted();
+//        emotionListAdapter.completeLoading();
+        if(rvEmotion != null && selectedModelIndex != -1) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    View itemView = rvEmotion.getChildAt(selectedModelIndex% 6);
+                    AVLoadingIndicatorView loadingIndicatorView = (AVLoadingIndicatorView) itemView.findViewById(R.id.loading_view);
+                    loadingIndicatorView.setVisibility(View.GONE);
+                }
+            });
+
+        }
     }
 }

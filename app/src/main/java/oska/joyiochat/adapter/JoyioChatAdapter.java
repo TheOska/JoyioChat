@@ -281,6 +281,7 @@ public class JoyioChatAdapter extends FirebaseRecyclerAdapter<JoyioChatMessage, 
             });
 
         }
+
         private MessageViewHolder.ClickListener mClickListener;
 
         public interface ClickListener{

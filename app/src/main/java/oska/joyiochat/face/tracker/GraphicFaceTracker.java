@@ -33,10 +33,10 @@ import oska.joyiochat.views.GraphicOverlay;
 /**
  * Face tracker for each detected individual. This maintains a face graphic within the app's
  * associated face overlay.
- *
+ * <p>
  * Create a callback to the GraphicOverlay to compu
  */
-public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectListener{
+public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectListener {
     private static final String TAG = "GraphicFaceTracker";
     private GraphicOverlay mOverlay;
     private FaceGraphic mFaceGraphic;
@@ -73,8 +73,6 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
         public void onFaceXYChanged(float x, float y) {
             faceX = x;
             faceY = y;
-
-
         }
 
         @Override
@@ -87,24 +85,24 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
             faceZ = z;
         }
     };
-    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity, Context context, ArrayList<EmotionModel> emotionModelArrayList, Utils utils) {
+
+    public GraphicFaceTracker(GraphicOverlay overlay, Activity activity, Context context
+            ,ArrayList<EmotionModel> emotionModelArrayList, Utils utils) {
         mOverlay = overlay;
         mUtils = utils;
         mFaceGraphic = new FaceGraphic(overlay, activity, mUtils, faceInfoDetectListener);
-        this.activity = (FaceTrackerActivity)activity;
+        this.activity = (FaceTrackerActivity) activity;
         this.context = context;
         lastEmotionIndex = -1;
-        timeLocked =false;
+        timeLocked = false;
         this.emotionModelArrayList = emotionModelArrayList;
         lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_CLOSE;
         isFirstRunObj = false;
     }
 
 
-
     /**
      * Start tracking the detected face instance within the face overlay.
-     *
      */
     @Override
     public void onNewItem(int faceId, Face item) {
@@ -125,16 +123,15 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     }
 
 
-
     @Override
     public void onSelected(int selectedIndex) {
         selectedModelIndex = selectedIndex;
         isFirstRunObj = false;
-        if (emotionModelArrayList.get(selectedModelIndex).getObjRenderer() instanceof MovableObjectRenderer){
+        if (emotionModelArrayList.get(selectedModelIndex).getObjRenderer() instanceof MovableObjectRenderer) {
             masterRenderer = (MovableObjectRenderer) emotionModelArrayList.get(selectedModelIndex).getObjRenderer();
             isMovable = true;
             Log.d("oska123", "it is movable");
-        }else{
+        } else {
             isMovable = false;
             Log.d("oska123", "it is not movable");
 
@@ -142,35 +139,38 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     }
 
     private void checkEyeOpenCondition() {
-        if(isMovable == false)
+        if (isMovable == false)
             return;
-        if(eyesLeftOpenRate > MobileVisionUtils.THRESHOLD_EYE_LEFT_OPEN ){
+        if (eyesLeftOpenRate > MobileVisionUtils.THRESHOLD_EYE_LEFT_OPEN) {
             initFalseDetection();
-            if(lastEyeOpenIndex != MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN) {
+            if (lastEyeOpenIndex != MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN) {
                 renderObject();
                 lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
             }
             masterRenderer.moveSelectedObject(faceX, faceY, rotationY);
             return;
 //            masterRenderer.zoomInOutObj(-faceZ);
-        }else if(isFirstRunObj == false && masterRenderer.getRenderCompleted() == true){
-            Log.d("oska123", "checkEyeOpenCondition 's getRenderCompleter is true");
-            isFirstRunObj = true;
-            renderObject();
-            lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
+        } else if (isFirstRunObj == false) {
+            // inner if : reduce the change to get the reference from materRenderer
+            if (masterRenderer.getRenderCompleted() == true) {
+                Log.d("oska123", "checkEyeOpenCondition 's getRenderCompleter is true");
+                isFirstRunObj = true;
+                renderObject();
+                lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
+            }
         }
 
 
-        if(eyesLeftOpenRate < MobileVisionUtils.THRESHOLD_EYE_LEFT_CLOSE && lastEyeOpenIndex == MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN){
+        if (eyesLeftOpenRate < MobileVisionUtils.THRESHOLD_EYE_LEFT_CLOSE && lastEyeOpenIndex == MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN) {
 
-            if(timeLocked == false) {
+            if (timeLocked == false) {
                 emotionChangeStart = System.currentTimeMillis();
                 timeLocked = true;
             }
             deltaTime = System.currentTimeMillis() - emotionChangeStart;
 
         }
-        if(deltaTime > MobileVisionUtils.FALSE_POSITIVE_FILTER ){
+        if (deltaTime > MobileVisionUtils.FALSE_POSITIVE_FILTER) {
             remove3D();
             lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_CLOSE;
         }
@@ -178,28 +178,28 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     }
 
     private void checkSmilingCondition() {
-        if(isMovable == false)
+        if (isMovable == false)
             return;
-        if(faceSmilingRate > MobileVisionUtils.THRESHOLD_SMILE ){
+        if (faceSmilingRate > MobileVisionUtils.THRESHOLD_SMILE) {
             initFalseDetection();
-            if(lastEmotionIndex != MobileVisionUtils.EMOTION_INDEX_SMILE) {
+            if (lastEmotionIndex != MobileVisionUtils.EMOTION_INDEX_SMILE) {
                 renderObject();
                 lastEmotionIndex = MobileVisionUtils.EMOTION_INDEX_SMILE;
             }
-            masterRenderer.moveSelectedObject(faceX ,
+            masterRenderer.moveSelectedObject(faceX,
                     faceY,
                     rotationY);
         }
 
-        if(faceSmilingRate < MobileVisionUtils.THRESHOLD_SAD && lastEmotionIndex == MobileVisionUtils.EMOTION_INDEX_SMILE){
-            if(timeLocked == false) {
+        if (faceSmilingRate < MobileVisionUtils.THRESHOLD_SAD && lastEmotionIndex == MobileVisionUtils.EMOTION_INDEX_SMILE) {
+            if (timeLocked == false) {
                 emotionChangeStart = System.currentTimeMillis();
                 timeLocked = true;
             }
             deltaTime = System.currentTimeMillis() - emotionChangeStart;
 
         }
-        if(deltaTime > MobileVisionUtils.FALSE_POSITIVE_FILTER ){
+        if (deltaTime > MobileVisionUtils.FALSE_POSITIVE_FILTER) {
             remove3D();
             lastEmotionIndex = MobileVisionUtils.EMOTION_INDEX_SAD;
         }
@@ -208,16 +208,16 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     private void initFalseDetection() {
         emotionChangeStart = 0;
         timeLocked = false;
-        deltaTime= 0 ;
+        deltaTime = 0;
     }
 
 
-    public void renderObject(){
+    public void renderObject() {
 //        remove3D();
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Log.d("oska" , "renderGlass run");
+                Log.d("oska", "renderGlass run");
 
                 masterRenderer.startRendObj();
 //                masterRenderer.startRendObj();
@@ -228,7 +228,8 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
             }
         });
     }
-    public void remove3D(){
+
+    public void remove3D() {
         Log.d("oska", "remove3d");
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -246,6 +247,7 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     @Override
     public void onMissing(FaceDetector.Detections<Face> detectionResults) {
         mOverlay.remove(mFaceGraphic);
+        Log.d("oska123" , "onMissing");
     }
 
     /**

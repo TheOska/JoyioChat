@@ -34,6 +34,9 @@ public class RajawaliUtils {
     public static int ROSE_ROT_Z = 180;
 
 
+    public static  int ANGRY_OBJ_OFFSET_X = -450;
+    public static  int ANGRY_OBJ_OFFSET_Y = -200;
+
     public static int ROX_X = 0;
     // measure the object position
     public static void changable(final Activity activity){
