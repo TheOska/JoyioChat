@@ -201,7 +201,7 @@ public class BallObjectRenderer extends Renderer{
 
         mLight = new PointLight();
         mLight.setPosition(0, 0, 4);
-        mLight.setPower(3);
+        mLight.setPower(7);
         getCurrentScene().addLight(mLight);
     }
     private void setupLightingAnim(){

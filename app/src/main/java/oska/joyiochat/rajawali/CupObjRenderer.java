@@ -31,7 +31,7 @@ import oska.joyiochat.utils.RajawaliUtils;
  * 2. 3D object rendering (include render which object for .obj source)
  * 3. 3D object moving(changing the 3D object position)
  */
-public class AngerRenderer extends MovableObjectRenderer {
+public class CupObjRenderer extends MovableObjectRenderer {
     private PointLight mLight;
     private DirectionalLight mDirectionalLight;
     private Context context;
@@ -44,7 +44,7 @@ public class AngerRenderer extends MovableObjectRenderer {
     private final String TAG = "ObjRender";
     private boolean renderCompleted;
 
-    public AngerRenderer(Context context) {
+    public CupObjRenderer(Context context) {
         super(context);
         this.context = context;
         setFrameRate(30);
@@ -62,7 +62,7 @@ public class AngerRenderer extends MovableObjectRenderer {
 
 
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager, R.raw.angry2_obj);
+                mTextureManager, R.raw.deer1_obj);
 
         try {
             objParser.parse();
@@ -74,30 +74,36 @@ public class AngerRenderer extends MovableObjectRenderer {
         }
 
 
+        Material sunGlassesMat1 = new Material();
+        sunGlassesMat1.setDiffuseMethod(new DiffuseMethod.Lambert());
+        sunGlassesMat1.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
+        sunGlassesMat1.enableLighting(true);
 
-        Material angryMaterial = new Material();
-        angryMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
-        angryMaterial.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
-        angryMaterial.enableLighting(true);
+
+        Material sunGlassesMat2 = new Material();
+        sunGlassesMat2.setDiffuseMethod(new DiffuseMethod.Lambert());
+        sunGlassesMat2.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
+        sunGlassesMat2.enableLighting(true);
         try {
-            angryMaterial.addTexture(new Texture("angry", R.drawable.cocacola));
+            sunGlassesMat1.addTexture(new Texture("sunGlassesMat1", R.drawable.tear_material));
+            sunGlassesMat2.addTexture(new Texture("sunGlassesMat2", R.drawable.tear_material));
 
         } catch (ATexture.TextureException e) {
             e.printStackTrace();
         }
-        angryMaterial.setColorInfluence(0);
+        sunGlassesMat1.setColorInfluence(0);
+        sunGlassesMat2.setColorInfluence(0);
 
-        mObjectGroup.getChildAt(0).setMaterial(angryMaterial);
-//        mObjectGroup.getChildAt(1).setMaterial(angryMaterial);
-//
+        for (int i = 0; i < mObjectGroup.getNumChildren(); i++){
+            Log.d("oska12345" , "mObjectGroup name " + mObjectGroup.getChildAt(i).getName()  );
+        }
+//        mObjectGroup.getChildAt(0).setMaterial(sunGlassesMat1);
+//        mObjectGroup.getChildAt(1).setMaterial(sunGlassesMat2);
 
-//        for (int i = 0; i < mObjectGroup.getNumChildren(); i++){
-//            mObjectGroup.getChildAt(i).setMaterial(angryMaterial);
-//        }
-        initObj(0,0,0,5f);
-        setObjRotationX(90);
-        setChildOffsetPosX(RajawaliUtils.ANGRY_OBJ_OFFSET_X);
-        setChildOffsetPosY(RajawaliUtils.ANGRY_OBJ_OFFSET_Y);
+        initObj(0,0,0,0.35f);
+
+//        setChildOffsetPosX(RajawaliUtils.GLASSES_OBJ_OFFSET_X);
+//        setChildOffsetPosY(RajawaliUtils.GLASSES_OBJ_OFFSET_Y);
 
         setupLighting();
         renderListener.onRendered();

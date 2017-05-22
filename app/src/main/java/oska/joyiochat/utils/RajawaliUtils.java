@@ -23,7 +23,7 @@ public class RajawaliUtils {
      * Y: eyes level position
      * */
     public static final int GLASSES_OBJ_OFFSET_X = 30;
-    public static final int GLASSES_OBJ_OFFSET_Y = 120;
+    public static final int GLASSES_OBJ_OFFSET_Y = 200;
 
     public static  int TEAR_OBJ_OFFSET_X = -260;
     public static  int TEAR_OBJ_OFFSET_Y = 300;
@@ -35,8 +35,10 @@ public class RajawaliUtils {
 
 
     public static  int ANGRY_OBJ_OFFSET_X = -450;
-    public static  int ANGRY_OBJ_OFFSET_Y = -200;
+    public static  int ANGRY_OBJ_OFFSET_Y = 0 ;
 
+    public static int LOVE_EYE_OBJ_OFFSET_X = -260;
+    public static int LOVE_EYE_OBJ_OFFSET_Y = 40;
     public static int ROX_X = 0;
     // measure the object position
     public static void changable(final Activity activity){
@@ -50,7 +52,7 @@ public class RajawaliUtils {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    ROSE_OBJ_OFFSET_Y += 10;
+                    LOVE_EYE_OBJ_OFFSET_Y -= 10;
                 }
             }
         });

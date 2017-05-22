@@ -35,7 +35,7 @@ import oska.joyiochat.listener.RenderListener;
  * Created by theoska on 4/7/17.
  */
 
-public class CanvasTextRenderer extends Renderer {
+public class ShutUpTextRenderer extends Renderer {
 
     private PointLight mLight;
     private Object3D mObjectGroup;
@@ -55,7 +55,7 @@ public class CanvasTextRenderer extends Renderer {
     private boolean mShouldUpdateTexture;
 
 
-    public CanvasTextRenderer(Context context){
+    public ShutUpTextRenderer(Context context){
         super(context);
         this.context = context;
         renderListener = (RenderListener)context;
@@ -99,7 +99,7 @@ public class CanvasTextRenderer extends Renderer {
             mTextPaint.setColor(Color.WHITE);
             mTextPaint.setTextSize(35);
             mTimeCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
-            mTimeCanvas.drawText("?", 75,
+            mTimeCanvas.drawText("Shut up", 75,
                     128, mTextPaint);
 
             mTimeTexture.setBitmap(mTimeBitmap);

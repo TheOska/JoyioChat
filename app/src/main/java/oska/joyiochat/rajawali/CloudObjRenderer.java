@@ -47,7 +47,7 @@ public class CloudObjRenderer extends Renderer {
 
         mLight = new PointLight();
         mLight.setPosition(0, 0, 4);
-        mLight.setPower(3);
+        mLight.setPower(6);
 
         getCurrentScene().addLight(mLight);
         getCurrentCamera().setX(3);
@@ -55,7 +55,7 @@ public class CloudObjRenderer extends Renderer {
         getCurrentCamera().setY(-4);
 
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager, R.raw.cloud3_obj);
+                mTextureManager, R.raw.cloud4_obj);
         try {
             objParser.parse();
             mObjectGroup = objParser.getParsedObject();
@@ -102,7 +102,7 @@ public class CloudObjRenderer extends Renderer {
             whiteMaterial.enableLighting(true);
 
             try {
-                ballMaterial.addTexture(new Texture("rose", R.drawable.cocacola));
+                ballMaterial.addTexture(new Texture("rose", R.drawable.crytexture));
                 darkMaterial.addTexture(new Texture("dark", R.drawable.dark_material));
                 whiteMaterial.addTexture(new Texture("white", R.drawable.white_material));
 
@@ -112,10 +112,11 @@ public class CloudObjRenderer extends Renderer {
             ballMaterial.setColorInfluence(0);
             darkMaterial.setColorInfluence(0);
             for (int i = 0 ; i< mObjectGroup.getNumChildren(); i++)
-                Log.d("oska", "ball name " + mObjectGroup.getChildAt(i).getName());
+                Log.d("oska12345", "ball name " + mObjectGroup.getChildAt(i).getName());
             whiteMaterial.setColorInfluence(0);
 //
-            mObjectGroup.getChildAt(0).setMaterial(ballMaterial);
+//            mObjectGroup.getChildAt(0).setMaterial(ballMaterial);
+//            mObjectGroup.getChildAt(1).setMaterial(ballMaterial);
 
             mObjectGroup.setScale(1);
 
@@ -135,8 +136,8 @@ public class CloudObjRenderer extends Renderer {
         getCurrentScene().registerAnimation(mLightAnim);
         getCurrentScene().registerAnimation(camRotationAnim);
         camHorizontalAnim.play();
-        camRotationAnim.play();
-        mLightAnim.play();
+//        camRotationAnim.play();
+//        mLightAnim.play();
 
     }
 

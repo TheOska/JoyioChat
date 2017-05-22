@@ -35,7 +35,6 @@
         <activity android:name=".activity.FaceTrackerActivity"
             android:label="face_tracker">
 
-
         </activity>
         <activity android:name=".test.PhotoViewerActivity"
             android:label="photo view"/>

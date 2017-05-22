@@ -53,6 +53,7 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     private double emotionChangeStart, deltaTime;
     private boolean timeLocked;
     private float faceSmilingRate, eyesLeftOpenRate, faceX, faceY, faceZ, rotationY;
+    private boolean isRenderSmileModel = false;
     private FaceInfoDetectListener faceInfoDetectListener = new FaceInfoDetectListener() {
         @Override
         public void onSmilingProbabilityChanged(float smilingRate) {
@@ -118,7 +119,8 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
         mFaceGraphic.updateFace(face);
 
 //        checkSmilingCondition();
-        checkEyeOpenCondition();
+        if(!isRenderSmileModel)
+            checkEyeOpenCondition();
 
     }
 
@@ -153,7 +155,6 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
         } else if (isFirstRunObj == false) {
             // inner if : reduce the change to get the reference from materRenderer
             if (masterRenderer.getRenderCompleted() == true) {
-                Log.d("oska123", "checkEyeOpenCondition 's getRenderCompleter is true");
                 isFirstRunObj = true;
                 renderObject();
                 lastEyeOpenIndex = MobileVisionUtils.EMOTION_INDEX_LEFT_EYE_OPEN;
@@ -178,9 +179,13 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     }
 
     private void checkSmilingCondition() {
-        if (isMovable == false)
-            return;
+//        if (isMovable == false)
+//            return;
         if (faceSmilingRate > MobileVisionUtils.THRESHOLD_SMILE) {
+            if(!isRenderSmileModel){
+                masterRenderer = new ObjRender(activity);
+                isRenderSmileModel = true;
+            }
             initFalseDetection();
             if (lastEmotionIndex != MobileVisionUtils.EMOTION_INDEX_SMILE) {
                 renderObject();
@@ -234,7 +239,9 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                masterRenderer.stopRendObj();
+                if(masterRenderer!= null)
+                    masterRenderer.stopRendObj();
+
             }
         });
     }
@@ -247,7 +254,7 @@ public class GraphicFaceTracker extends Tracker<Face> implements EmotionSelectLi
     @Override
     public void onMissing(FaceDetector.Detections<Face> detectionResults) {
         mOverlay.remove(mFaceGraphic);
-        Log.d("oska123" , "onMissing");
+        remove3D();
     }
 
     /**

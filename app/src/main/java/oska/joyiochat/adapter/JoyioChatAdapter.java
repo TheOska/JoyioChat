@@ -210,7 +210,7 @@ public class JoyioChatAdapter extends FirebaseRecyclerAdapter<JoyioChatMessage, 
                                 realm.beginTransaction();
                                 videoModel.setLocalVideoPath(ChatRoomDetailActivity.LOCAL_DIR_JOYIOCHAT+
                                         ChatRoomDetailActivity.LOCAL_FOLDER+
-                                        "joyiochat_video_"+videoModel.getId()+".mp4."
+                                        "joyiochat_video_"+videoModel.getId()+".mp4.mp4"
                                 );
                                 realm.insertOrUpdate(videoModel);
                                 realm.commitTransaction();
@@ -220,12 +220,6 @@ public class JoyioChatAdapter extends FirebaseRecyclerAdapter<JoyioChatMessage, 
 
                                 clickedPosition = position;
                                 joyioMessageViewHolder = messageViewHolder;
-                                Log.d("oska123", downloadManagerPro.singleDownloadStatus(token).name);
-                                Log.d("oska123", downloadManagerPro.singleDownloadStatus(token).type);
-                                Log.d("oska123", downloadManagerPro.singleDownloadStatus(token).fileSize+"");
-                                Log.d("oska123", downloadManagerPro.singleDownloadStatus(token).downloadLength+"");
-                                Log.d("oska123", downloadManagerPro.singleDownloadStatus(token).saveAddress+"");
-                                Log.d("oska123", downloadManagerPro.singleDownloadStatus(token).name);
 
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -236,6 +230,7 @@ public class JoyioChatAdapter extends FirebaseRecyclerAdapter<JoyioChatMessage, 
 //                            Uri localVideoUrl = getVideoContentUri(activity,new File(localVideoModel.getLocalVideoPath()));
                             Log.d("videoPath" , localVideoModel.getLocalVideoPath());
                             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(localVideoModel.getLocalVideoPath()));
+                            // null
                             intent.setDataAndType(Uri.parse(localVideoModel.getLocalVideoPath()), "video/mp4");
                             activity.startActivity(intent);
 

@@ -10,6 +10,7 @@ android {
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -19,6 +20,7 @@ android {
 
     }
     splits {
+
         abi {
             enable true
             reset()

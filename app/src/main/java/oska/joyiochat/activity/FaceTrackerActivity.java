@@ -89,12 +89,19 @@ import oska.joyiochat.rajawali.AngerRenderer;
 import oska.joyiochat.rajawali.BirdObjRenderer;
 import oska.joyiochat.rajawali.CanvasTextRenderer;
 import oska.joyiochat.rajawali.CloudObjRenderer;
+import oska.joyiochat.rajawali.BigCryObjectRender;
+import oska.joyiochat.rajawali.CupObjRenderer;
+import oska.joyiochat.rajawali.DeerObjRenderer;
 import oska.joyiochat.rajawali.DiceObjectRenderer;
 import oska.joyiochat.rajawali.FootballObjectRenderer;
 import oska.joyiochat.rajawali.LikeObjRenderer;
+import oska.joyiochat.rajawali.LoveEye2ObjRender;
+import oska.joyiochat.rajawali.LoveEyeObjectRender;
 import oska.joyiochat.rajawali.MaskObjectRender;
+import oska.joyiochat.rajawali.MusicNoteObjectRenderer;
 import oska.joyiochat.rajawali.ObjRender;
 import oska.joyiochat.rajawali.RoseObjectRenderer;
+import oska.joyiochat.rajawali.ShutUpTextRenderer;
 import oska.joyiochat.rajawali.TearObjectRender;
 import oska.joyiochat.recording.CaptureHelper;
 import oska.joyiochat.recording.TelecineService;
@@ -234,6 +241,30 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
                 "bird", R.drawable.bird_icon, false);
         emotionModelArrayList.add(model13);
 
+        EmotionModel model14 = new EmotionModel(EmotionModelIndex.DRINK_MODEL,
+                "drink", R.drawable.coca_drink_icon, false);
+        emotionModelArrayList.add(model14);
+
+        EmotionModel model15 = new EmotionModel(EmotionModelIndex.BIG_CRY_MODEL,
+                "drink", R.drawable.tear_icon, false);
+        emotionModelArrayList.add(model15);
+
+
+        EmotionModel model16 = new EmotionModel(EmotionModelIndex.DEER_MODEL,
+                "drink", R.drawable.deer_icon, false);
+        emotionModelArrayList.add(model16);
+
+        EmotionModel model17 = new EmotionModel(EmotionModelIndex.MUSIC_NOTE_MODEL,
+                "music", R.drawable.music_note_icon, false);
+        emotionModelArrayList.add(model17);
+
+        EmotionModel model18 = new EmotionModel(EmotionModelIndex.SHUT_UP_MODEL,
+                "music", R.drawable.shut_up, false);
+        emotionModelArrayList.add(model18);
+
+        EmotionModel model19 = new EmotionModel(EmotionModelIndex.LOVE_EYE_MODEL,
+                "music", R.drawable.love_eye, false);
+        emotionModelArrayList.add(model19);
     }
 
 
@@ -356,7 +387,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
 
                     View itemView = rvEmotion.getChildAt(selectedModelIndex % 6);
                     AVLoadingIndicatorView loadingIndicatorView = (AVLoadingIndicatorView) itemView.findViewById(R.id.loading_view);
-                    loadingIndicatorView.setVisibility(View.VISIBLE);
+                    loadingIndicatorView.setVisibility(View.GONE);
 
                     mPreview.removeView(surface);
                     surface = new SurfaceView(getApplicationContext());
@@ -415,6 +446,31 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Vide
                             break;
                         case EmotionModelIndex.BIRD_MODEL:
                             newRenderer = new BirdObjRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case EmotionModelIndex.DRINK_MODEL:
+                            newRenderer = new CupObjRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case EmotionModelIndex.BIG_CRY_MODEL:
+                            newRenderer = new BigCryObjectRender(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case EmotionModelIndex.DEER_MODEL:
+                            newRenderer = new DeerObjRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case EmotionModelIndex.MUSIC_NOTE_MODEL:
+                            newRenderer = new MusicNoteObjectRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+                        case EmotionModelIndex.SHUT_UP_MODEL:
+                            newRenderer = new ShutUpTextRenderer(activity);
+                            emotionModelArrayList.get(position).setObjRenderer(newRenderer);
+                            break;
+
+                        case EmotionModelIndex.LOVE_EYE_MODEL:
+                            newRenderer = new LoveEye2ObjRender(activity);
                             emotionModelArrayList.get(position).setObjRenderer(newRenderer);
                             break;
                     }

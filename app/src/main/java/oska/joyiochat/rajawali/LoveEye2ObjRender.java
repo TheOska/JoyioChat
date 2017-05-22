@@ -31,7 +31,7 @@ import oska.joyiochat.utils.RajawaliUtils;
  * 2. 3D object rendering (include render which object for .obj source)
  * 3. 3D object moving(changing the 3D object position)
  */
-public class AngerRenderer extends MovableObjectRenderer {
+public class LoveEye2ObjRender extends MovableObjectRenderer {
     private PointLight mLight;
     private DirectionalLight mDirectionalLight;
     private Context context;
@@ -44,7 +44,7 @@ public class AngerRenderer extends MovableObjectRenderer {
     private final String TAG = "ObjRender";
     private boolean renderCompleted;
 
-    public AngerRenderer(Context context) {
+    public LoveEye2ObjRender(Context context) {
         super(context);
         this.context = context;
         setFrameRate(30);
@@ -62,7 +62,7 @@ public class AngerRenderer extends MovableObjectRenderer {
 
 
         LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager, R.raw.angry2_obj);
+                mTextureManager, R.raw.heart2_obj);
 
         try {
             objParser.parse();
@@ -74,30 +74,17 @@ public class AngerRenderer extends MovableObjectRenderer {
         }
 
 
+        Material sunGlassesMat1 = new Material();
+        sunGlassesMat1.setDiffuseMethod(new DiffuseMethod.Lambert());
+        sunGlassesMat1.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
+        sunGlassesMat1.enableLighting(true);
 
-        Material angryMaterial = new Material();
-        angryMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
-        angryMaterial.setSpecularMethod(new SpecularMethod.Phong(Color.WHITE, 150));
-        angryMaterial.enableLighting(true);
-        try {
-            angryMaterial.addTexture(new Texture("angry", R.drawable.cocacola));
 
-        } catch (ATexture.TextureException e) {
-            e.printStackTrace();
-        }
-        angryMaterial.setColorInfluence(0);
-
-        mObjectGroup.getChildAt(0).setMaterial(angryMaterial);
-//        mObjectGroup.getChildAt(1).setMaterial(angryMaterial);
-//
-
-//        for (int i = 0; i < mObjectGroup.getNumChildren(); i++){
-//            mObjectGroup.getChildAt(i).setMaterial(angryMaterial);
-//        }
-        initObj(0,0,0,5f);
-        setObjRotationX(90);
-        setChildOffsetPosX(RajawaliUtils.ANGRY_OBJ_OFFSET_X);
-        setChildOffsetPosY(RajawaliUtils.ANGRY_OBJ_OFFSET_Y);
+        initObj(0,0,0,0.3f);
+        initObj(3,0,0,0.3f);
+        setObjRotationY(90);
+        setChildOffsetPosX(RajawaliUtils.LOVE_EYE_OBJ_OFFSET_X);
+        setChildOffsetPosY(RajawaliUtils.LOVE_EYE_OBJ_OFFSET_Y);
 
         setupLighting();
         renderListener.onRendered();

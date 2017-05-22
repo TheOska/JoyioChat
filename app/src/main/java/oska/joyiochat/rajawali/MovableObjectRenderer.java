@@ -12,6 +12,7 @@ import org.rajawali3d.Object3D;
 import org.rajawali3d.animation.Animation;
 import org.rajawali3d.animation.Animation3D;
 import org.rajawali3d.animation.EllipticalOrbitAnimation3D;
+import org.rajawali3d.animation.TranslateAnimation3D;
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.lights.DirectionalLight;
 import org.rajawali3d.lights.PointLight;
@@ -22,6 +23,9 @@ import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.util.GLU;
 import org.rajawali3d.util.ObjectColorPicker;
 import org.rajawali3d.util.OnObjectPickedListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -61,6 +65,18 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
     private float childOffsetX = 0;
     private float childOffsetY = 0;
     private float childOffsetZ = 0;
+    private TranslateAnimation3D cameraAnimation;
+    private boolean isSetAnimation = false;
+
+    // offset that after 3d projection
+    private float pickedObjOffsetY;
+    private float pickedObjOffsetX;
+    private float pickedObjOffsetZ;
+
+    private float previousX = -1;
+    private float previousY = -1;
+    private List<Float> smoothingListX;
+    private List<Float> smoothingListY;
 
     /**
      * Fixed position around
@@ -78,6 +94,13 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
         setFrameRate(45);
         this.renderListener = (RenderListener)context;
         isInteractiveObj = false;
+        // default value
+        pickedObjOffsetY = 180;
+        pickedObjOffsetX = 0;
+        pickedObjOffsetZ = 0;
+        smoothingListX = new ArrayList<>();
+        smoothingListY = new ArrayList<>();
+
     }
 
     public MovableObjectRenderer(Context context, Object3D mObjectGroup ) {
@@ -86,6 +109,10 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
         setFrameRate(45);
         this.renderListener = (RenderListener)context;
         this.mObjectGroup = mObjectGroup;
+        smoothingListX = new ArrayList<>();
+        smoothingListY = new ArrayList<>();
+
+
     }
 
     protected void initLighting(){
@@ -116,13 +143,11 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
     }
     protected void setChildOffsetPosX(float offsetX){
         if(mObjectGroup != null){
-            Log.d("oska123", "setChildOffsetPosX called");
-            Log.d("oska123","in the setChildOffsetPox 's offsetX " + offsetX);
             childOffsetX = offsetX;
-            Log.d("oska123","in the setChildOffsetPox 's childOffsetX " + childOffsetX);
 
         }
     }
+
     protected void setChildOffsetPosY(float offsetY){
         if(mObjectGroup != null){
             childOffsetY = offsetY;
@@ -211,6 +236,7 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
      */
     public void moveSelectedObject(float x, float y, float rotationY) {
         if (mObjectGroup == null){
+
             Log.d(TAG, "mObjectGroup is null");
             mObjectGroup = getObject3D();
         }
@@ -219,10 +245,28 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
             return;
         }
 
-//        Log.d("oska123", "ROSE_OBJ_OFFSET_Y " + RajawaliUtils.ROSE_OBJ_OFFSET_Y );
-        x += childOffsetX;
-        y += childOffsetY;
+        if(previousX != -1) {
+            x += childOffsetX;
+            x = (x+previousX) / 2;
+            y += childOffsetY;
+            y = (y+previousY)/2;
+        }
 
+//        if(smoothingListX.size() != 5){
+//            smoothingListX.add(x);
+//        }else{
+//            smoothingListX.remove(0);
+//            smoothingListX.add(x);
+//            x = averageSmoothingData(smoothingListX);
+//        }
+//
+//        if(smoothingListY.size() != 5){
+//            smoothingListY.add(y);
+//        }else{
+//            smoothingListY.remove(0);
+//            smoothingListY.add(y);
+//            y = averageSmoothingData(smoothingListY);
+//        }
 
         GLU.gluUnProject(x, getViewportHeight() - y, 0, mViewMatrix.getDoubleValues(), 0,
                 mProjectionMatrix.getDoubleValues(), 0, mViewport, 0, mNearPos4, 0);
@@ -245,14 +289,42 @@ public abstract class MovableObjectRenderer extends Renderer implements OnObject
         mNewObjPos.add(mNearPos);
         mObjectGroup.setX(mNewObjPos.x);
         mObjectGroup.setY(mNewObjPos.y);
-        if(isInteractiveObj == false)
-            mObjectGroup.setRotY(180+rotationY*1.5);
+        if(isInteractiveObj == false) {
+            mObjectGroup.setRotY(pickedObjOffsetY + rotationY );
+            mObjectGroup.setRotX(pickedObjOffsetX);
+            mObjectGroup.setRotZ(pickedObjOffsetZ);
+        }
         else
             mObjectGroup.setRotation(new Vector3(mNewObjPos.x, mNewObjPos.y, mObjectGroup.getZ()), 180);
-
+        if(isSetAnimation){
+            cameraAnimation.getTransformable3D().setPosition(mNewObjPos.x, mNewObjPos.y,mObjectGroup.getZ());
+        }
+        previousX = x;
+        previousY = y;
 
     }
 
+    private float averageSmoothingData(List<Float> smoothingList) {
+        float averageData = 0;
+        for(float s : smoothingList){
+            averageData += s;
+        }
+        return averageData / smoothingList.size();
+    }
+
+    protected void setCameraAnimation(TranslateAnimation3D animation){
+        cameraAnimation = animation;
+        isSetAnimation = true;
+    }
+    protected void setPickedObjOffsetY(float pickedObjOffsetY){
+        this.pickedObjOffsetY = pickedObjOffsetY;
+    }
+    protected void setPickedObjOffsetX(float pickedObjOffsetX){
+        this.pickedObjOffsetX = pickedObjOffsetX;
+    }
+    protected void setPickedObjOffsetZ(float pickedObjOffsetZ){
+        this.pickedObjOffsetY = pickedObjOffsetY;
+    }
     public void stopRendObj(){
         getCurrentScene().removeChild(mObjectGroup);
     }

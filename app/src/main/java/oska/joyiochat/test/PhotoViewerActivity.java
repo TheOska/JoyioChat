@@ -53,7 +53,7 @@ public class PhotoViewerActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_viewer);
 
-        InputStream stream = getResources().openRawResource(R.raw.test2);
+        InputStream stream = getResources().openRawResource(R.raw.ice_normal_map);
         Bitmap bitmap = BitmapFactory.decodeStream(stream);
 
 
