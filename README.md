@@ -22,6 +22,6 @@ https://youtu.be/0_DKc9hetVM
  interact between Android and OpenGL, make it more lite to render the 3D
  models in Android.
  
-Finally, after the 3D models are rendered, we will use the Vuforia library, Vuforia is an Augmented Reality Software Development Kit for mobile devices, it enables the creation of Augmented Reality applications. Via this SDK, we map the corresponding 3D models to the user face. 
+~~Finally, after the 3D models are rendered, we will use the Vuforia library, Vuforia is an Augmented Reality Software Development Kit for mobile devices, it enables the creation of Augmented Reality applications. Via this SDK, we map the corresponding 3D models to the user face. ~~
 
 (For the latest updated version, we finally dosen’t need Vuforia for AR 3d project, because what we have been done, is to map the 3D models using RAJAWALI into detected user face. Such that we doesn’t need this library support )
